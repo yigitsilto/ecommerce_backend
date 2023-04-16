@@ -10,7 +10,6 @@
             </button>
         </div>
     </div>
-
     @hasAccess('admin.options.index')
         @if ($globalOptions->isNotEmpty())
             <div class="add-global-option clearfix pull-right">

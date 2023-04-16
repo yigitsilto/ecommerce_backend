@@ -29,6 +29,7 @@ class SaveOptionRequest extends Request
             'values.*.label' => 'required_if:options.*.type,dropdown,checkbox,checkbox_custom,radio,radio_custom,multiple_select',
             'values.*.price' => 'nullable|numeric|min:0|max:99999999999999',
             'values.*.price_type' => ['required', Rule::in(['fixed', 'percent'])],
+            'values.*.stock' => 'nullable|integer|min:0|max:99999999999999',
         ];
     }
 

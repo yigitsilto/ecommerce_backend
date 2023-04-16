@@ -126,6 +126,7 @@
                             <label for="option-<%- optionId %>-is-required">{{ trans('option::attributes.is_required') }}</label>
                         </div>
 
+
                         <button type="button" class="btn btn-default delete-option pull-right" data-toggle="tooltip" title="{{ trans('option::options.form.delete_option') }}">
                             <i class="fa fa-trash"></i>
                         </button>

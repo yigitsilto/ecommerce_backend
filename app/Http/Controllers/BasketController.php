@@ -46,10 +46,10 @@ class BasketController extends Controller
         foreach ($basket as $item) {
 
             // qty is not enough delete item
-                if ($item->product->qty < $item->quantity) {
-                    $item->delete();
-                    continue;
-                }
+            if ($item->product->qty < $item->quantity) {
+                $item->delete();
+                continue;
+            }
 
             $normalPrice = $item->product->normalPrice ?? 0;
             if (isset($item->product->special_price)) {
@@ -89,13 +89,38 @@ class BasketController extends Controller
                                 ]);
     }
 
+    public function delete($basket)
+    {
+        $basket = Basket::query()
+                        ->find($basket);
+        if (!$basket) {
+            return BaseException::responseServerError('Ürün bulunamadı');
+        }
+        if ($basket->user_id == auth('api')->id()) {
+            $basket->delete();
+            return 1;
+        } else {
+            return response()->json(['error' => "unauthorized"], 401);
+        }
+    }
+
     public function storeAll(Request $requets)
     {
+
 
         foreach ($requets->all() as $item) {
             $product = Product::with('options')
                               ->select('id', 'manage_stock', 'qty')
                               ->findOrFail($item['product_id']);
+
+
+            $checkOptionStock = $this->checkOptionStock($item['options'], $item['quantity']); // varyasyonun stok kontrolü
+
+            if (!$checkOptionStock) {
+                // passed this product
+                continue;
+            }
+
 
             $qty = 10;
             if ($product->manage_stock) {
@@ -105,7 +130,8 @@ class BasketController extends Controller
             }
 
             if ($qty < $item["quantity"]) {
-                return BaseException::responseServerError('Stok yeterli değil');
+                // passed this product
+                continue;
             }
 
             $basket = Basket::query()
@@ -137,6 +163,12 @@ class BasketController extends Controller
     public function store(StoreBasketRequets $request)
     {
 
+        $checkOptionStock = $this->checkOptionStock($request->options, $request->quantity); // varyasyonun stok kontrolü
+
+        if (!$checkOptionStock) {
+            return BaseException::responseServerError('Stok yeterli değil');
+        }
+
         $basket = Basket::query()
                         ->with('product')
                         ->where('user_id', auth('api')->id())
@@ -159,6 +191,22 @@ class BasketController extends Controller
         return response()->json($basket);
     }
 
+    protected function checkOptionStock($options,$qty)
+    {
+        foreach ($options as $option) {
+            $optionValue = OptionValue::query()
+                                      ->where('option_id', $option['optionId'])
+                                      ->where('id', $option['valueId'])
+                                      ->first();
+
+
+            if ($qty > $optionValue->stock) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public function updateBasketQuantity($basketId, UpdateBasketRequests $request)
     {
         $basket = Basket::find($basketId);
@@ -176,20 +224,5 @@ class BasketController extends Controller
         return response()->json($basket);
 
 
-    }
-
-    public function delete($basket)
-    {
-        $basket = Basket::query()
-                        ->find($basket);
-        if (!$basket) {
-            return BaseException::responseServerError('Ürün bulunamadı');
-        }
-        if ($basket->user_id == auth('api')->id()) {
-            $basket->delete();
-            return 1;
-        } else {
-            return response()->json(['error' => "unauthorized"], 401);
-        }
     }
 }

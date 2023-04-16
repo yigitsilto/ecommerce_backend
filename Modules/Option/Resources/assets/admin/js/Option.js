@@ -4,6 +4,7 @@ export default class extends BaseOption {
     constructor() {
         super();
 
+        alert('Option');
         let values = FleetCart.data['option.values'];
 
         $('#type').on('change', (e) => {

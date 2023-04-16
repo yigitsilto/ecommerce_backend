@@ -121,7 +121,7 @@ export default class extends BaseOption {
         optionTypeElement.trigger('change');
     }
 
-    addOptionRow({ optionId, valueId, value = { label: '', price: '', price_type: 'fixed' } }) {
+    addOptionRow({ optionId, valueId, value = { label: '', price: '', price_type: 'fixed' , stock:0 } }) {
         let template = this.getRowTemplate({ optionId, valueId, value });
 
         let selectValues = $(`#option-${optionId}-select-values`).append(template);

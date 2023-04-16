@@ -8,6 +8,7 @@
                         <th>{{ trans('option::attributes.label') }}</th>
                         <th>{{ trans('option::attributes.price') }}</th>
                         <th>{{ trans('option::attributes.price_type') }}</th>
+                        <th>Stok</th>
                         <th></th>
                     </tr>
                 </thead>

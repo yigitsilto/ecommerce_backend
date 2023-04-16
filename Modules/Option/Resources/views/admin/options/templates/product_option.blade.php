@@ -133,7 +133,6 @@
                     </div>
 
                     <div class="clearfix"></div>
-
                     <div class="option-values clearfix" id="option-<%- optionId %>-values">
                         {{-- Custom option values will be added here dynamically using JS --}}
                     </div>

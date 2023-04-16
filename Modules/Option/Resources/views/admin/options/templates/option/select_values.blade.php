@@ -50,6 +50,7 @@
                 min="0"
             >
         </td>
+
         <td>
             <select
                 <% if (optionId === undefined) { %>
@@ -74,6 +75,24 @@
 {{--                </option>--}}
             </select>
         </td>
+
+        <td>
+            <input
+                style="width: 100px!important;"
+                    type="number"
+            <% if (optionId === undefined) { %>
+            name="values[<%- valueId %>][stock]"
+            id="values-<%- valueId %>-stock"
+            <% } else { %>
+            name="options[<%- optionId %>][values][<%- valueId %>][stock]"
+            id="option-<%- optionId %>-values-<%- valueId %>-stock"
+            <% } %>
+
+            class="form-control"
+            value="<%- value.stock %>"
+            >
+        </td>
+
         <td class="text-center">
             <button type="button" class="btn btn-default delete-row" data-toggle="tooltip" title="{{ trans('option::options.form.delete_row') }}">
                 <i class="fa fa-trash"></i>

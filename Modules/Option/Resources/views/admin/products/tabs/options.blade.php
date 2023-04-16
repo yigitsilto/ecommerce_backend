@@ -31,6 +31,7 @@
     @endHasAccess
 </div>
 
+
 @push('globals')
     <script>
         FleetCart.data['product.options'] = {!! old_json('options', $product->options) !!};

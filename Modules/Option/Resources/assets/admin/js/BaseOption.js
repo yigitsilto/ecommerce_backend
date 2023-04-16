@@ -1,4 +1,5 @@
 export default class {
+
     addOptionsErrors(errors) {
         for (let key in errors) {
             let inputField = this.getInputFieldForErrorKey(key);
@@ -20,7 +21,7 @@ export default class {
     changeOptionType({ optionId, type, values = [] }) {
         let optionValuesElement = this.getOptionValuesElement(optionId);
         let templateType = this.getTemplateType(type, optionValuesElement);
-        let optionValuesData = { optionId, value: { id: '', label: '', price: '', price_type: 'fixed' } };
+        let optionValuesData = { optionId, value: { id: '', label: '', price: '', price_type: 'fixed', stock:0 } };
 
         if (this.shouldNotChangeTemplate(templateType, optionValuesElement)) {
             return;

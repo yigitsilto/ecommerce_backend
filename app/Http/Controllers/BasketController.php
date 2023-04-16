@@ -18,7 +18,7 @@ class BasketController extends Controller
         $this->basketService = $basketService;
     }
 
-    public function getBasketForCreditCard($id)
+    public function getBasketForCreditCard(int $id)
     {
         return $this->basketService->getBasketForCreditCard($id);
     }
@@ -28,7 +28,7 @@ class BasketController extends Controller
         return $this->basketService->index();
     }
 
-    public function delete($basket)
+    public function delete(int $basket)
     {
         return $this->basketService->delete($basket);
     }
@@ -43,7 +43,7 @@ class BasketController extends Controller
         return $this->basketService->store($request);
     }
 
-    public function updateBasketQuantity($basketId, UpdateBasketRequests $request)
+    public function updateBasketQuantity(int $basketId, UpdateBasketRequests $request)
     {
         return $this->basketService->updateBasketQuantity($basketId, $request);
     }

@@ -14,7 +14,7 @@ use Modules\Support\Money;
 
 class BasketServiceImpl implements BasketService
 {
-    public function getBasketForCreditCard($id)
+    public function getBasketForCreditCard($id): \Illuminate\Http\JsonResponse
     {
         $order = OrderSnaphot::query()
                              ->where('id', $id)
@@ -32,7 +32,7 @@ class BasketServiceImpl implements BasketService
 
     }
 
-    public function index()
+    public function index(): \Illuminate\Http\JsonResponse
     {
         $basket = Basket::query()
                         ->whereHas('product')
@@ -87,7 +87,7 @@ class BasketServiceImpl implements BasketService
                                 ]);
     }
 
-    public function delete($basket)
+    public function delete(int $basket)
     {
         $basket = Basket::query()
                         ->find($basket);
@@ -102,7 +102,7 @@ class BasketServiceImpl implements BasketService
         }
     }
 
-    public function store(StoreBasketRequets $request)
+    public function store(StoreBasketRequets $request): \Illuminate\Http\JsonResponse
     {
         $checkOptionStock = $this->checkOptionStock($request->options, $request->quantity); // varyasyonun stok kontrolü
 
@@ -132,7 +132,7 @@ class BasketServiceImpl implements BasketService
         return response()->json($basket);
     }
 
-    public function storeAll(Request $request)
+    public function storeAll(Request $request): bool
     {
         foreach ($request->all() as $item) {
             $product = Product::with('options')
@@ -184,7 +184,7 @@ class BasketServiceImpl implements BasketService
         return true;
     }
 
-    public function updateBasketQuantity($basketId, UpdateBasketRequests $request)
+    public function updateBasketQuantity(int $basketId, UpdateBasketRequests $request): \Illuminate\Http\JsonResponse
     {
         $basket = Basket::find($basketId);
         if ($basket->product->qty < $request->quantity) {

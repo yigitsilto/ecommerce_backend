@@ -9,6 +9,8 @@ use FleetCart\Repositories\Product\ProductRepository;
 use FleetCart\Repositories\Product\ProductRepositoryInterface;
 use FleetCart\Repositories\Address\AddressRepository;
 use FleetCart\Repositories\Address\AddressRepositoryInterface;
+use FleetCart\Services\BasketService;
+use FleetCart\Services\BasketServiceImpl;
 use FleetCart\Services\CardTypeBinApiService;
 use FleetCart\Services\CardTypeBinApiServiceImpl;
 use FleetCart\Services\CheckoutService;
@@ -32,6 +34,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CheckoutService::class,CheckoutServiceImpl::class);
         $this->app->bind(ParamPosService::class, ParamPosServiceImpl::class);
         $this->app->bind(CardTypeBinApiService::class,CardTypeBinApiServiceImpl::class);
+        $this->app->bind(BasketService::class,BasketServiceImpl::class);
 
     }
 

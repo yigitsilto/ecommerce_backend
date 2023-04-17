@@ -186,6 +186,7 @@ class BasketServiceImpl implements BasketService
 
     public function updateBasketQuantity(int $basketId, UpdateBasketRequests $request): \Illuminate\Http\JsonResponse
     {
+
         $basket = Basket::find($basketId);
         if ($basket->product->qty < $request->quantity) {
             return BaseException::responseServerError('Stok yeterli değil');

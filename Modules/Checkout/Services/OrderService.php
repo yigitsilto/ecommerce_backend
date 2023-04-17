@@ -2,41 +2,33 @@
 
 namespace Modules\Checkout\Services;
 
-use FleetCart\Basket;
-use Modules\Cart\CartTax;
-use Modules\Cart\CartItem;
-use Modules\Cart\Facades\Cart;
-use Modules\Order\Entities\Order;
 use Modules\Address\Entities\Address;
-use Modules\FlashSale\Entities\FlashSale;
-use Modules\Currency\Entities\CurrencyRate;
 use Modules\Address\Entities\DefaultAddress;
+use Modules\Cart\CartItem;
+use Modules\Cart\CartTax;
+use Modules\Cart\Facades\Cart;
+use Modules\Currency\Entities\CurrencyRate;
+use Modules\FlashSale\Entities\FlashSale;
+use Modules\Option\Entities\OptionValue;
+use Modules\Order\Entities\Order;
 use Modules\Product\Entities\Product;
 use Modules\Shipping\Facades\ShippingMethod;
 
 class OrderService
 {
-    public function create($request,$basket)
-    {
-       // $this->mergeShippingAddress($request);
-       // $this->saveAddress($request);
-        $this->addShippingMethodToCart($request);
 
-        return tap($this->store($request), function ($order) use($basket) {
-            $this->storeOrderProducts($order,$basket);
-          //  $this->storeOrderDownloads($order,$basket); // TODO gerekirse eklenicek
-           // $this->storeFlashSaleProductOrders($order,$basket);
-           // $this->incrementCouponUsage($order);
-           // $this->attachTaxes($order);
-            $this->reduceStock($order);
-        });
+    public function delete(Order $order)
+    {
+        $order->delete();
+
+        Cart::restoreStock();
     }
 
     private function mergeShippingAddress($request)
     {
         $request->merge([
-            'shipping' => $request->ship_to_a_different_address ? $request->shipping : $request->billing,
-        ]);
+                            'shipping' => $request->ship_to_a_different_address ? $request->shipping : $request->billing,
+                        ]);
     }
 
     private function saveAddress($request)
@@ -46,50 +38,46 @@ class OrderService
         }
 
         if ($request->newBillingAddress) {
-            $address = auth()->user()->addresses()->create(
-                $this->extractAddress($request->billing)
-            );
+            $address = auth()
+                ->user()
+                ->addresses()
+                ->create(
+                    $this->extractAddress($request->billing)
+                );
 
 
             $this->makeDefaultAddress($address);
         }
 
         if ($request->ship_to_a_different_address && $request->newShippingAddress) {
-            auth()->user()->addresses()->create(
-                $this->extractAddress($request->shipping)
-            );
+            auth()
+                ->user()
+                ->addresses()
+                ->create(
+                    $this->extractAddress($request->shipping)
+                );
         }
     }
 
-    private function extractAddress($data)
+    public function create($request, $basket)
     {
-        return [
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
-            'address_1' => $data['address_1'],
-            'address_2' => $data['address_2'] ?? null,
-            'city' => $data['city'],
-            'state' => $data['state'],
-            'zip' => $data['zip'],
-            'country' => $data['country'],
-        ];
-    }
+        // $this->mergeShippingAddress($request);
+        // $this->saveAddress($request);
+        $this->addShippingMethodToCart($request);
 
-    private function makeDefaultAddress(Address $address)
-    {
-        if (auth()->user()->addresses()->count() > 1) {
-            return;
-        }
-
-        DefaultAddress::create([
-            'address_id' => $address->id,
-            'customer_id' => auth()->id(),
-        ]);
+        return tap($this->store($request), function ($order) use ($basket) {
+            $this->storeOrderProducts($order, $basket);
+            //  $this->storeOrderDownloads($order,$basket); // TODO gerekirse eklenicek
+            // $this->storeFlashSaleProductOrders($order,$basket);
+            // $this->incrementCouponUsage($order);
+            // $this->attachTaxes($order);
+            $this->reduceStock($order, $basket);
+        });
     }
 
     private function addShippingMethodToCart($request)
     {
-        if (! Cart::allItemsAreVirtual() && ! Cart::hasShippingMethod()) {
+        if (!Cart::allItemsAreVirtual() && !Cart::hasShippingMethod()) {
             Cart::addShippingMethod(ShippingMethod::get($request->shipping_method));
         }
     }
@@ -132,74 +120,114 @@ class OrderService
                                  'note' => $request->order_note,
                                  'totalWithCommission' => $request->totalWithCommission ?? null,
                                  'installment' => $request->installment ?? null,
-        ]);
+                             ]);
     }
 
-    private function storeOrderProducts(Order $order,$basket)
+    private function storeOrderProducts(Order $order, $basket)
     {
-        foreach ($basket as $cartItem){
+        foreach ($basket as $cartItem) {
             $order->storeProductsForApi($cartItem);
         }
     }
 
-    private function storeOrderDownloads(Order $order)
+    public function reduceStock($order, $basket)
     {
-        Cart::items()->each(function (CartItem $cartItem) use ($order) {
-            $order->storeDownloads($cartItem);
-        });
+
+
+        foreach ($basket as $cartItem) {
+            $options = json_decode($cartItem->options, true);
+            if (!empty($options)) {
+                foreach ($options as $option) {
+                    OptionValue::query()
+                               ->where('option_id', $option['optionId'])
+                               ->where('id', $option['valueId'])
+                               ->decrement('stock', $cartItem->quantity);
+
+                }
+            }
+
+
+            Product::query()
+                   ->where('id', $cartItem->product_id)
+                   ->decrement('qty', $cartItem->quantity);
+
+        }
+
+    }
+
+    private function extractAddress($data)
+    {
+        return [
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'address_1' => $data['address_1'],
+            'address_2' => $data['address_2'] ?? null,
+            'city' => $data['city'],
+            'state' => $data['state'],
+            'zip' => $data['zip'],
+            'country' => $data['country'],
+        ];
     }
 
     // TODO gerekirse yapılacak
-    private function storeOrderDownloadsForApi(Order $order,$basket)
+
+    private function makeDefaultAddress(Address $address)
     {
-        foreach ($basket as $cartItem){
+        if (auth()
+                ->user()
+                ->addresses()
+                ->count() > 1) {
+            return;
+        }
+
+        DefaultAddress::create([
+                                   'address_id' => $address->id,
+                                   'customer_id' => auth()->id(),
+                               ]);
+    }
+
+    private function storeOrderDownloads(Order $order)
+    {
+        Cart::items()
+            ->each(function (CartItem $cartItem) use ($order) {
+                $order->storeDownloads($cartItem);
+            });
+    }
+
+    private function storeOrderDownloadsForApi(Order $order, $basket)
+    {
+        foreach ($basket as $cartItem) {
             $order->storeDownloads($cartItem);
         }
     }
 
-    private function storeFlashSaleProductOrders(Order $order,$basket)
+    private function storeFlashSaleProductOrders(Order $order, $basket)
     {
-        foreach ($basket as $cartItem){
+        foreach ($basket as $cartItem) {
 
 
             FlashSale::pivot($cartItem->product)
-                ->orders()
-                ->attach([
-                    $cartItem->product->id => [
-                        'order_id' => $order->id,
-                        'qty' => $cartItem->quantity,
-                    ],
-                ]);
+                     ->orders()
+                     ->attach([
+                                  $cartItem->product->id => [
+                                      'order_id' => $order->id,
+                                      'qty' => $cartItem->quantity,
+                                  ],
+                              ]);
         }
     }
 
     private function incrementCouponUsage()
     {
-        Cart::coupon()->usedOnce();
+        Cart::coupon()
+            ->usedOnce();
     }
 
     private function attachTaxes(Order $order)
     {
-        Cart::taxes()->each(function (CartTax $cartTax) use ($order) {
-            $order->attachTax($cartTax);
-        });
-    }
-
-    public function reduceStock($order)
-    {
-        foreach ($order->products as $product){
-           if (!empty($product->product->qty)){
-               Product::query()->where('id',$product->product->id)->decrement('qty',$product->qty);
-
-           }
-        }
-
-    }
-
-    public function delete(Order $order)
-    {
-        $order->delete();
-
-        Cart::restoreStock();
+        Cart::taxes()
+            ->each(function (CartTax $cartTax) use ($order) {
+                $order->attachTax($cartTax);
+            });
     }
 }

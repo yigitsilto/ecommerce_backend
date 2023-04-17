@@ -22,4 +22,6 @@ interface BasketService
 
     public function updateBasketQuantity(int $basketId, UpdateBasketRequests $request): \Illuminate\Http\JsonResponse;
 
+
+
 }

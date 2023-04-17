@@ -17,8 +17,8 @@ use Modules\User\Services\CustomerService;
 class CheckoutServiceImpl implements CheckoutService
 {
 
-    private $customerService;
-    private $orderService;
+    private CustomerService $customerService;
+    private OrderService $orderService;
 
     public function __construct(CustomerService $customerService, OrderService $orderService)
     {

@@ -35,6 +35,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = unserialize(Redis::get('products'));
+        $sliders = unserialize(Redis::get('sliders'));
 
         if (!$products) {
             $products = Product::query()
@@ -44,13 +45,18 @@ class ProductController extends Controller
             Redis::set('products', serialize($products));
         }
 
+        if (!$sliders) {
+            $sliders = Slider::query()
+                             ->limit(3)
+                             ->get();
+            Redis::set('sliders', serialize($sliders));
+        }
+
         event(new ShowingProductList($products));
 
         return response()->json([
                                     'products' => HomePageProductsResource::collection($products),
-                                    'sliders' => Slider::query()
-                                                       ->limit(3)
-                                                       ->get(),
+                                    'sliders' => $sliders,
                                 ]);
     }
 

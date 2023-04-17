@@ -70,20 +70,20 @@ class ProductController extends Controller
     {
 
         $product = Product::findBySlug($slug);
-        $relatedProducts = $product->relatedProducts()
-                                   ->forCard()
-                                   ->get();
-        $upSellProducts = $product->upSellProducts()
-                                  ->forCard()
-                                  ->get();
-        $review = $this->getReviewData($product);
+//        $relatedProducts = $product->relatedProducts()
+//                                   ->forCard()
+//                                   ->get();
+//        $upSellProducts = $product->upSellProducts()
+//                                  ->forCard()
+//                                  ->get();
+//        $review = $this->getReviewData($product);
 
         event(new ProductViewed($product));
 
         $data = [
             'product' => $product,
-            'relatedProducts' => $relatedProducts,
-            'upSellProducts' => $upSellProducts,
+//            'relatedProducts' => $relatedProducts,
+//            'upSellProducts' => $upSellProducts,
             //'review' => $review
         ];
 
@@ -103,20 +103,27 @@ class ProductController extends Controller
 
     public function categoriesForProduct()
     {
-        $query = Category::inRandomOrder()
-                         ->whereHas('products')
-                         ->with([
-                                    'products' => function ($query) {
-                                        $query->where('is_active', 1)
-                                              ->where('is_popular', 1)
-                                              ->inRandomOrder()
-                                              ->limit(20);
-                                    },
-                                ])
-                         ->where('is_active', true)
-                         ->where('is_popular', true)
-                         ->limit(6)
-                         ->get();
+
+        $query = unserialize(Redis::get('categoryWithProducts'));
+
+        if (!$query) {
+            $query = Category::inRandomOrder()
+                             ->whereHas('products')
+                             ->with([
+                                        'products' => function ($query) {
+                                            $query->where('is_active', 1)
+                                                  ->where('is_popular', 1)
+                                                  ->inRandomOrder()
+                                                  ->limit(20);
+                                        },
+                                    ])
+                             ->where('is_active', true)
+                             ->where('is_popular', true)
+                             ->limit(6)
+                             ->get();
+            Redis::set('categoryWithProducts', serialize($query));
+        }
+
 
         return CategoryResource::collection($query);
     }

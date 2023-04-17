@@ -4,6 +4,7 @@ namespace FleetCart\Http\Controllers;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Mexitek\PHPColors\Color;
@@ -28,62 +29,51 @@ class SettingsController extends Controller
 
     private $productChanged = true;
 
-    public function getPageById($slug){
+    public function getPageById($slug)
+    {
         return response()->json([
-            'data' => Page::query()->where('slug',$slug)->first()
-        ]);
+                                    'data' => Page::query()
+                                                  ->where('slug', $slug)
+                                                  ->first()
+                                ]);
     }
 
     public function index()
     {
-        return response()->json([
-            'banners' => Banner::getSliderBanners(),
-            'settings' => [
-                'themeColor' => $this->getThemeColor(),
-                'favicon' => $this->getFavicon(),
-                'logo' => $this->getHeaderLogo(),
-                'copyrightText' => $this->getCopyrightText(),
-                'welcomeText' => $this->getWelcomeText(),
-                'address' => setting('storefront_address'),
-                'facebook' => setting('storefront_facebook_link'),
-                'twitter' => setting('storefront_twitter_link'),
-                'instagram' => setting('storefront_instagram_link'),
-                'youtube' => setting('storefront_youtube_link'),
-                'primaryMenu' => $this->getPrimaryMenu(),
-                'categoryMenu' => $this->getCategoryMenu(),
-                'footer1' => $this->getFooterMenuOne(),
-                'footer2' => $this->getFooterMenuTwo(),
-                'pages' => Page::query()->get(),
-            ],
 
-        ]);
+        // set redis
+
+        $settings = json_decode(Redis::get('settings'));
+
+        if (!$settings) {
+            $settings = [
+                'banners' => Banner::getSliderBanners(),
+                'settings' => [
+                    'themeColor' => $this->getThemeColor(),
+                    'favicon' => $this->getFavicon(),
+                    'logo' => $this->getHeaderLogo(),
+                    'copyrightText' => $this->getCopyrightText(),
+                    'welcomeText' => $this->getWelcomeText(),
+                    'address' => setting('storefront_address'),
+                    'facebook' => setting('storefront_facebook_link'),
+                    'twitter' => setting('storefront_twitter_link'),
+                    'instagram' => setting('storefront_instagram_link'),
+                    'youtube' => setting('storefront_youtube_link'),
+                    'primaryMenu' => $this->getPrimaryMenu(),
+                    'categoryMenu' => $this->getCategoryMenu(),
+                    'footer1' => $this->getFooterMenuOne(),
+                    'footer2' => $this->getFooterMenuTwo(),
+                    'pages' => Page::query()
+                                   ->get(),
+                ],
+            ];
+            Redis::set('settings', json_encode($settings));
+        }
 
 
-    }
+        return $settings;
 
-    private function getFooterMenuOne()
-    {
-        $menu =  new MegaMenu(setting('storefront_footer_menu_one'));
-        return $menu->getMenus();
 
-    }
-
-    private function getFooterMenuTwo()
-    {
-        $menu =  new MegaMenu(setting('storefront_footer_menu_two'));
-        return $menu->getMenus();
-    }
-
-    private function getPrimaryMenu()
-    {
-        $menu =  new MegaMenu(setting('storefront_primary_menu'));
-        return $menu->getMenus();
-    }
-
-    private function getCategoryMenu()
-    {
-        $menu = new MegaMenu(setting('storefront_category_menu'));
-        return $menu->getMenus();
     }
 
     private function getThemeColor()
@@ -130,16 +120,43 @@ class SettingsController extends Controller
         ]);
     }
 
+    private function getPrimaryMenu()
+    {
+        $menu = new MegaMenu(setting('storefront_primary_menu'));
+        return $menu->getMenus();
+    }
+
+    private function getCategoryMenu()
+    {
+        $menu = new MegaMenu(setting('storefront_category_menu'));
+        return $menu->getMenus();
+    }
+
+    private function getFooterMenuOne()
+    {
+        $menu = new MegaMenu(setting('storefront_footer_menu_one'));
+        return $menu->getMenus();
+
+    }
+
+    private function getFooterMenuTwo()
+    {
+        $menu = new MegaMenu(setting('storefront_footer_menu_two'));
+        return $menu->getMenus();
+    }
+
     public function footerTagsCallback($tagIds)
     {
         return function () use ($tagIds) {
             return Tag::whereIn('id', $tagIds)
-                ->when(!empty($tagIds), function ($query) use ($tagIds) {
-                    $tagIdsString = collect($tagIds)->filter()->implode(',');
+                      ->when(!empty($tagIds), function ($query) use ($tagIds) {
+                          $tagIdsString = collect($tagIds)
+                              ->filter()
+                              ->implode(',');
 
-                    $query->orderByRaw("FIELD(id, {$tagIdsString})");
-                })
-                ->get();
+                          $query->orderByRaw("FIELD(id, {$tagIdsString})");
+                      })
+                      ->get();
         };
     }
 
@@ -148,7 +165,8 @@ class SettingsController extends Controller
 
         $client = new Client();
 
-        $response = $client->request('GET', 'http://cdn1.xmlbankasi.com/p1/palkdisticaret/image/data/xml/beautyprenses.xml');
+        $response = $client->request('GET',
+                                     'http://cdn1.xmlbankasi.com/p1/palkdisticaret/image/data/xml/beautyprenses.xml');
 
         $xml = simplexml_load_string($response->getBody());
 
@@ -207,12 +225,13 @@ class SettingsController extends Controller
 
     private function createBrand($name)
     {
-        $brand = Brand::query()->updateOrCreate([
-            'slug' => $this->toSlug($name)
-        ], [
-            'name' => $name,
-            'is_active' => true,
-        ]);
+        $brand = Brand::query()
+                      ->updateOrCreate([
+                                           'slug' => $this->toSlug($name)
+                                       ], [
+                                           'name' => $name,
+                                           'is_active' => true,
+                                       ]);
 
         return $brand->id;
 
@@ -229,29 +248,34 @@ class SettingsController extends Controller
     {
 
 
-        $categoryMain = Category::query()->firstOrCreate([
-            "slug" => $this->toSlug($mainCategory),
-        ], [
-            'name' => $mainCategory,
-            "is_searchable" => "1",
-            "is_active" => "1",
-            "is_popular" => "0",
-            "slug" => $this->toSlug($mainCategory),
-            'parent_id' => null,
-        ]);
+        $categoryMain = Category::query()
+                                ->firstOrCreate([
+                                                    "slug" => $this->toSlug($mainCategory),
+                                                ], [
+                                                    'name' => $mainCategory,
+                                                    "is_searchable" => "1",
+                                                    "is_active" => "1",
+                                                    "is_popular" => "0",
+                                                    "slug" => $this->toSlug($mainCategory),
+                                                    'parent_id' => null,
+                                                ]);
 
-        $subCat = Category::query()->firstOrCreate([
-            "slug" => $this->toSlug($productCategory),
-        ], [
-            'name' => $productCategory,
-            "is_searchable" => "1",
-            "is_active" => "1",
-            "is_popular" => "0",
-            "slug" => $this->toSlug($productCategory),
-            'parent_id' => $categoryMain->id,
-        ]);
+        $subCat = Category::query()
+                          ->firstOrCreate([
+                                              "slug" => $this->toSlug($productCategory),
+                                          ], [
+                                              'name' => $productCategory,
+                                              "is_searchable" => "1",
+                                              "is_active" => "1",
+                                              "is_popular" => "0",
+                                              "slug" => $this->toSlug($productCategory),
+                                              'parent_id' => $categoryMain->id,
+                                          ]);
 
-        return [$subCat->id, $categoryMain->id];
+        return [
+            $subCat->id,
+            $categoryMain->id
+        ];
 
 
     }
@@ -262,35 +286,38 @@ class SettingsController extends Controller
         if (!empty($imageUrl)) {
             $fileId = $this->saveFile($imageUrl, $this->toSlug($values['name']));
             $values = array_merge([
-                'files' => [
-                    'base_image' => $fileId,
-                ]
-            ], $values);
+                                      'files' => [
+                                          'base_image' => $fileId,
+                                      ]
+                                  ], $values);
         }
 
 
-        $product = Product::query()->updateOrCreate([
-            'slug' => $this->toSlug($values['name'])
-        ], $values);
+        $product = Product::query()
+                          ->updateOrCreate([
+                                               'slug' => $this->toSlug($values['name'])
+                                           ], $values);
 
 
         foreach ($values['categories'][0] as $category) {
-            ProductCategories::query()->updateOrCreate([
-                'product_id' => $product->id,
-                'category_id' => $category
-            ], [
-                'product_id' => $product->id,
-                'category_id' => $category
-            ]);
+            ProductCategories::query()
+                             ->updateOrCreate([
+                                                  'product_id' => $product->id,
+                                                  'category_id' => $category
+                                              ], [
+                                                  'product_id' => $product->id,
+                                                  'category_id' => $category
+                                              ]);
         }
 
         if ($fileId != 0) {
-            EntityFiles::query()->updateOrCreate([
-                'entity_id' => $product->id,
-                'entity_type' => 'Modules\Product\Entities\Product',
-                'file_id' => $fileId,
-                'zone' => 'base_image'
-            ]);
+            EntityFiles::query()
+                       ->updateOrCreate([
+                                            'entity_id' => $product->id,
+                                            'entity_type' => 'Modules\Product\Entities\Product',
+                                            'file_id' => $fileId,
+                                            'zone' => 'base_image'
+                                        ]);
         }
 
         $this->createVariants($variants, $product->id);
@@ -315,20 +342,21 @@ class SettingsController extends Controller
         Storage::put("media/" . $name, $file);
         $path = "media/" . $name;
 
-        $file = File::query()->updateOrCreate(
-            [
-                'filename' => $name . "." . $extension,
-                'path' => $path,
-            ],
-            [
-                'user_id' => 3,
-                'disk' => config('filesystems.default'),
-                'filename' => $name . "." . $extension,
-                'path' => $path,
-                'extension' => $extension ?? '',
-                'mime' => $mimeType,
-                'size' => 2000,
-            ]);
+        $file = File::query()
+                    ->updateOrCreate(
+                        [
+                            'filename' => $name . "." . $extension,
+                            'path' => $path,
+                        ],
+                        [
+                            'user_id' => 3,
+                            'disk' => config('filesystems.default'),
+                            'filename' => $name . "." . $extension,
+                            'path' => $path,
+                            'extension' => $extension ?? '',
+                            'mime' => $mimeType,
+                            'size' => 2000,
+                        ]);
 
 
         return $file->id;
@@ -339,7 +367,8 @@ class SettingsController extends Controller
     {
 
         if (!is_null($variants->variant)) {
-            foreach ($variants->variant as $variant) {  // variants  variant spec name renk value kırmızı variant spec name renk value lacivert
+            foreach ($variants->variant as $variant)
+            {  // variants  variant spec name renk value kırmızı variant spec name renk value lacivert
 
                 $specName = (string)$variant->spec['name']; // Renk
                 $specValue = (string)$variant->spec; // Kırmızı
@@ -349,13 +378,14 @@ class SettingsController extends Controller
                 $optionId = 0;
 
                 if ($this->productChanged) {
-                    $option = Option::query()->create(
-                        [
-                            "id" => null,
-                            "name" => $specName,
-                            "type" => "radio",
-                            "is_required" => true
-                        ]);
+                    $option = Option::query()
+                                    ->create(
+                                        [
+                                            "id" => null,
+                                            "name" => $specName,
+                                            "type" => "radio",
+                                            "is_required" => true
+                                        ]);
 
                     $optionId = $option->id;
 
@@ -363,31 +393,36 @@ class SettingsController extends Controller
 
                 } else {
 
-                    $exists = OptionTranslation::query()->where('name', $specName)->orderBy('id','desc')->first();
+                    $exists = OptionTranslation::query()
+                                               ->where('name', $specName)
+                                               ->orderBy('id', 'desc')
+                                               ->first();
                     $optionId = $exists->option_id;
 
                 }
 
 
                 if ($optionId != 0) {
-                    $value = OptionValue::query()->create(
-                        [
-                            'label' => $specValue,
-                            'price' => $specPrice,
-                            'price_type' => 'fixed',
-                            'option_id' => $optionId,
-                            'position' => 0
-                        ]);
+                    $value = OptionValue::query()
+                                        ->create(
+                                            [
+                                                'label' => $specValue,
+                                                'price' => $specPrice,
+                                                'price_type' => 'fixed',
+                                                'option_id' => $optionId,
+                                                'position' => 0
+                                            ]);
 
-                    ProductOption::query()->firstOrCreate(
-                        [
-                            'product_id' => $productId,
-                            'option_id' => $optionId
-                        ],
-                        [
-                            'product_id' => $productId,
-                            'option_id' => $optionId
-                        ]);
+                    ProductOption::query()
+                                 ->firstOrCreate(
+                                     [
+                                         'product_id' => $productId,
+                                         'option_id' => $optionId
+                                     ],
+                                     [
+                                         'product_id' => $productId,
+                                         'option_id' => $optionId
+                                     ]);
 
                 }
 
@@ -398,10 +433,15 @@ class SettingsController extends Controller
 
     private function getFooterMenu($menuId)
     {
-        return Cache::tags(['menu_items', 'categories', 'pages', 'settings'])
-            ->rememberForever(md5("storefront_footer_menu.{$menuId}:" . locale()), function () use ($menuId) {
-                return Menu::for($menuId);
-            });
+        return Cache::tags([
+                               'menu_items',
+                               'categories',
+                               'pages',
+                               'settings'
+                           ])
+                    ->rememberForever(md5("storefront_footer_menu.{$menuId}:" . locale()), function () use ($menuId) {
+                        return Menu::for($menuId);
+                    });
     }
 
 

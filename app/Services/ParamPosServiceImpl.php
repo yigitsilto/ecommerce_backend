@@ -97,13 +97,31 @@ XML;
 
         $priceInformations = $this->checkoutService->getTotalValuesFromBasket($request);
 
-        $totalPrice = $this->tlFormat($priceInformations['total']);
-        $totalPriceWithComission = $totalPrice;
-        $totalPriceWithComission = $priceInformations['total'] + (($priceInformations['total'] *
-                    $checkoutRequest['ratio']) /
-                100);
+        $totalPrice = $priceInformations['total'];
 
-        $totalPriceWithComission = round($totalPriceWithComission, 2, PHP_ROUND_HALF_DOWN);
+
+        if ($checkoutRequest['Taksit'] == 1) {
+
+            $totalPriceWithComission = $totalPrice;
+            $totalPrice = $priceInformations['total'] - (($priceInformations['total'] *
+                        $checkoutRequest['ratio']) /
+                    100);
+
+            $totalPriceWithComission = round($totalPriceWithComission, 2, PHP_ROUND_HALF_DOWN);
+
+
+        } else {
+
+            $totalPriceWithComission = $totalPrice;
+            $totalPriceWithComission = $priceInformations['total'] + (($priceInformations['total'] *
+                        $checkoutRequest['ratio']) /
+                    100);
+
+            $totalPriceWithComission = round($totalPriceWithComission, 2, PHP_ROUND_HALF_DOWN);
+
+
+        }
+
 
         OrderSnaphot::query()
                     ->where('id', $checkoutRequest['Siparis_ID'])
@@ -111,6 +129,8 @@ XML;
                                  'totalPrice' => $totalPriceWithComission,
                                  'installment' => $checkoutRequest['Taksit']
                              ]);
+
+
 
 
         $client = $this->connect;
@@ -131,7 +151,7 @@ XML;
             "paymentUrl" => "http://localhost:3000/payment?order=" . $checkoutRequest['Siparis_ID'],
             "orderExplanation" => date("d-m-Y H:i:s") . " tarihindeki ödeme",
             "installment" => $checkoutRequest['Taksit'],
-            "transactionPayment" => $totalPrice,
+            "transactionPayment" => $this->tlFormat($totalPrice),
             "totalPayment" => $this->tlFormat($totalPriceWithComission),
             "transactionID" => $checkoutRequest['Siparis_ID'],
             "ipAdr" => "192.168.168.115"

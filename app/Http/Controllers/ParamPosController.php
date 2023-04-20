@@ -4,25 +4,23 @@ namespace FleetCart\Http\Controllers;
 
 use FleetCart\Http\Requests\CheckoutParamRequest;
 use FleetCart\Services\CardTypeBinApiService;
-use FleetCart\Services\CheckoutService;
 use FleetCart\Services\ParamPosService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 
 class ParamPosController extends Controller
 {
-    private $paramPosInstallmentService;
+    private ParamPosService $paramPosInstallmentService;
 
-    private $cardTypeService;
+    private CardTypeBinApiService $cardTypeService;
 
-    private $checkoutService;
 
-    public function __construct(ParamPosService $paramPosInstallmentService, CardTypeBinApiService $cardTypeBinApiService, CheckoutService $checkoutService)
+    public function __construct(ParamPosService $paramPosInstallmentService, CardTypeBinApiService $cardTypeBinApiService)
     {
         $this->paramPosInstallmentService = $paramPosInstallmentService;
         $this->cardTypeService = $cardTypeBinApiService;
-        $this->checkoutService = $checkoutService;
     }
 
     public function index()
@@ -33,7 +31,7 @@ class ParamPosController extends Controller
     /**
      * Kart tipini ve gerekli taksit bilgisini döner
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function getCardInformations(Request $request)
     {
@@ -55,7 +53,7 @@ class ParamPosController extends Controller
     /**
      * Param 3d ödemesinden sonra atılan success url
      * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function successPayment(Request $request)
     {
@@ -66,7 +64,7 @@ class ParamPosController extends Controller
     /**
      * Param 3d ödemesinden sonra atılan fail url
      * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function errorPayment(Request $request)
     {

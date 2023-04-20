@@ -3,6 +3,7 @@
 namespace Modules\Setting\Http\Controllers\Admin;
 
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Redis;
 use Modules\Admin\Ui\Facades\TabManager;
 use Modules\Core\Http\Requests\Request;
 use Modules\Setting\Entities\ShippingCompany;
@@ -43,6 +44,8 @@ class SettingController
         }
 
 
+        $this->redisUpdate();
+
         $this->handleMaintenanceMode($request);
 
         setting($request->except('_token', '_method'));
@@ -51,8 +54,16 @@ class SettingController
             ->with('success', trans('setting::messages.settings_have_been_saved'));
     }
 
+    private function redisUpdate(){
+        Redis::del('products');
+        Redis::del('settings');
+        Redis::del('sliders');
+        Redis::del('categoryWithProducts');
+    }
+
     private function handleMaintenanceMode($request)
     {
+        $this->redisUpdate();
         if ($request->maintenance_mode) {
             Artisan::call('down');
         } elseif (app()->isDownForMaintenance()) {
@@ -72,7 +83,7 @@ class SettingController
             'name' => $request->get('name'),
             'price' => $request->get('price'),
         ]);
-
+        $this->redisUpdate();
          return redirect()->route('admin.settings.companies');
     }
 
@@ -82,7 +93,7 @@ class SettingController
     }
 
     public function deleteCompany($id){
-
+        $this->redisUpdate();
         ShippingCompany::query()->find($id)->delete();
         return redirect()->back();
 

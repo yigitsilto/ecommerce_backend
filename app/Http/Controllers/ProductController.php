@@ -45,6 +45,7 @@ class ProductController extends Controller
             Redis::set('products', serialize($products));
         }
 
+
         if (!$sliders) {
             $sliders = Slider::query()
                              ->limit(3)

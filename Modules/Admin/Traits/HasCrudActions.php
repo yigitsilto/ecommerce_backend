@@ -3,6 +3,7 @@
 namespace Modules\Admin\Traits;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use Modules\Support\Search\Searchable;
 use Modules\Admin\Ui\Facades\TabManager;
 
@@ -60,6 +61,11 @@ trait HasCrudActions
         );
 
         $this->searchable($entity);
+
+        Redis::del('products');
+        Redis::del('settings');
+        Redis::del('sliders');
+        Redis::del('categoryWithProducts');
 
         if (method_exists($this, 'redirectTo')) {
             return $this->redirectTo($entity);
@@ -120,10 +126,16 @@ trait HasCrudActions
 
         $this->searchable($entity);
 
+        Redis::del('products');
+        Redis::del('settings');
+        Redis::del('sliders');
+        Redis::del('categoryWithProducts');
+
         if (method_exists($this, 'redirectTo')) {
             return $this->redirectTo($entity)
                 ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
         }
+
 
         return redirect()->route("{$this->getRoutePrefix()}.index")
             ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));

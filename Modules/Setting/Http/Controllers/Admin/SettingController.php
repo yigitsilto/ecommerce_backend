@@ -59,6 +59,7 @@ class SettingController
         Redis::del('settings');
         Redis::del('sliders');
         Redis::del('categoryWithProducts');
+        Redis::del('brands');
     }
 
     private function handleMaintenanceMode($request)

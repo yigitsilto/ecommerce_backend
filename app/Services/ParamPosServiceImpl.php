@@ -99,28 +99,17 @@ XML;
 
         $totalPrice = $priceInformations['total'];
 
+        $comissionRatio = $checkoutRequest['ratio'] / 100;
+
+        $totalPriceWithComission = $totalPrice;
 
         if ($checkoutRequest['Taksit'] == 1) {
-
-            $totalPriceWithComission = $totalPrice;
-            $totalPrice = $priceInformations['total'] - (($priceInformations['total'] *
-                        $checkoutRequest['ratio']) /
-                    100);
-
-            $totalPriceWithComission = round($totalPriceWithComission, 2, PHP_ROUND_HALF_DOWN);
-
-
+            $totalPrice -= $totalPrice * $comissionRatio;
         } else {
-
-            $totalPriceWithComission = $totalPrice;
-            $totalPriceWithComission = $priceInformations['total'] + (($priceInformations['total'] *
-                        $checkoutRequest['ratio']) /
-                    100);
-
-            $totalPriceWithComission = round($totalPriceWithComission, 2, PHP_ROUND_HALF_DOWN);
-
-
+            $totalPriceWithComission += $totalPrice * $comissionRatio;
         }
+
+        $totalPriceWithComission = round($totalPriceWithComission, 2, PHP_ROUND_HALF_DOWN);
 
 
         OrderSnaphot::query()
@@ -129,8 +118,6 @@ XML;
                                  'totalPrice' => $totalPriceWithComission,
                                  'installment' => $checkoutRequest['Taksit']
                              ]);
-
-
 
 
         $client = $this->connect;

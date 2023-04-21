@@ -5,6 +5,8 @@ namespace FleetCart\Http\Controllers;
 use FleetCart\Http\Requests\CategoryProductListRequest;
 use FleetCart\Http\Resources\CategoryResource;
 use FleetCart\Http\Resources\HomePageProductsResource;
+use FleetCart\Http\Resources\ProductResource;
+use FleetCart\Http\Resources\ProductsByCategoryCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Modules\Brand\Entities\Brand;
@@ -132,6 +134,7 @@ class ProductController extends Controller
     public function getProductsByCategorySlug($slug, CategoryProductListRequest $request)
     {
         $products = Product::query()
+                            ->with(['brand', 'categories'])
                            ->whereHas('categories', function ($query) use ($slug) {
                                $query->where('slug', $slug);
                            });
@@ -162,7 +165,7 @@ class ProductController extends Controller
         event(new ShowingProductList($products));
 
         return response()->json([
-                                    'products' => $products->paginate(12),
+                                    'products' => new ProductsByCategoryCollection($products->paginate(12)),
                                     'categories' => $this->getChildCategories($category),
                                     'brands' => $this->getBrands(),
                                 ]);

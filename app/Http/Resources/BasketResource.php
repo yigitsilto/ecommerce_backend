@@ -15,7 +15,19 @@ class BasketResource extends JsonResource
     public function toArray($request)
     {
         return [
-
+            'id' =>$this->id,
+            'product_id' =>$this->product_id,
+            'user_id' =>$this->user_id,
+            'quantity' =>$this->quantity,
+            'options' =>$this->options,
+            'created_at' =>$this->created_at,
+            'updated_at' =>$this->updated_at,
+            'price' =>$this->price,
+            'total' =>$this->total,
+            'totalPriceNotFormatted' =>$this->totalPriceNotFormatted,
+            'product' => $this->whenLoaded('product', function () {
+                return new HomePageProductsResource($this->product);
+            })
         ];
     }
 }

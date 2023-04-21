@@ -6,6 +6,7 @@ use FleetCart\Basket;
 use FleetCart\Exceptions\BaseException;
 use FleetCart\Http\Requests\StoreBasketRequets;
 use FleetCart\Http\Requests\UpdateBasketRequests;
+use FleetCart\Http\Resources\BasketResource;
 use FleetCart\OrderSnaphot;
 use Illuminate\Http\Request;
 use Modules\Option\Entities\OptionValue;
@@ -35,8 +36,8 @@ class BasketServiceImpl implements BasketService
     public function index(): \Illuminate\Http\JsonResponse
     {
         $basket = Basket::query()
-                        ->whereHas('product')
                         ->with('product')
+                        ->whereHas('product')
                         ->where('user_id', auth('api')->id())
                         ->get();
 
@@ -82,7 +83,7 @@ class BasketServiceImpl implements BasketService
 
 
         return response()->json([
-                                    'basket' => $basket,
+                                    'basket' => BasketResource::collection($basket),
                                     'free_shipping_amount' => $decimalNumber
                                 ]);
     }
@@ -132,6 +133,22 @@ class BasketServiceImpl implements BasketService
         return response()->json($basket);
     }
 
+    protected function checkOptionStock($options, $qty): bool
+    {
+        foreach ($options as $option) {
+            $optionValue = OptionValue::query()
+                                      ->where('option_id', $option['optionId'])
+                                      ->where('id', $option['valueId'])
+                                      ->first();
+
+
+            if ($qty > $optionValue->stock) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public function storeAll(Request $request): bool
     {
         foreach ($request->all() as $item) {
@@ -140,7 +157,8 @@ class BasketServiceImpl implements BasketService
                               ->findOrFail($item['product_id']);
 
 
-            $checkOptionStock = $this->checkOptionStock($item['options'], $item['quantity']); // varyasyonun stok kontrolü
+            $checkOptionStock = $this->checkOptionStock($item['options'],
+                                                        $item['quantity']); // varyasyonun stok kontrolü
 
             if (!$checkOptionStock) {
                 // passed this product
@@ -200,22 +218,6 @@ class BasketServiceImpl implements BasketService
         }
 
         return response()->json($basket);
-    }
-
-    protected function checkOptionStock($options, $qty): bool
-    {
-        foreach ($options as $option) {
-            $optionValue = OptionValue::query()
-                                      ->where('option_id', $option['optionId'])
-                                      ->where('id', $option['valueId'])
-                                      ->first();
-
-
-            if ($qty > $optionValue->stock) {
-                return false;
-            }
-        }
-        return true;
     }
 
 

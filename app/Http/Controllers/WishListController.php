@@ -2,6 +2,7 @@
 
 namespace FleetCart\Http\Controllers;
 
+use FleetCart\Http\Resources\WishListCollection;
 use FleetCart\WishList;
 use Illuminate\Http\Request;
 
@@ -10,12 +11,13 @@ class WishListController extends Controller
     public function index()
     {
         $wishlists = WishList::query()
+            ->with(['product'])
             ->whereHas('product')
-            ->with(['product','user'])
             ->where('user_id',auth('api')->id())
             ->latest()
-            ->paginate(20);
-        return response()->json($wishlists);
+            ->paginate(50);
+
+        return response()->json(new WishListCollection($wishlists));
     }
 
     public function store(Request $request)

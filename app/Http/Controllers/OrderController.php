@@ -2,6 +2,8 @@
 
 namespace FleetCart\Http\Controllers;
 
+use FleetCart\Http\Resources\OrderResource;
+use FleetCart\Http\Resources\OrderResourceCollection;
 use Illuminate\Http\Request;
 use Modules\Order\Entities\Order;
 
@@ -23,7 +25,8 @@ class OrderController extends Controller
             ->whereHas('products')
             ->findOrFail($id);
 
-        return response()->json($order);
+//        return response()->json($order);
+        return response()->json(new OrderResource($order));
 
     }
 }

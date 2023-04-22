@@ -52,6 +52,7 @@ class OrderResource extends JsonResource
             'note' => $this->note,
             'installment' => $this->installment,
             'totalWithCommission' => $this->totalWithCommission,
+            'created_at' => $this->created_at,
             'products' =>OrderProductsResource::collection($this->products),
 
         ];

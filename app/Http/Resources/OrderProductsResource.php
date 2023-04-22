@@ -21,6 +21,7 @@ class OrderProductsResource extends JsonResource
             'unit_price' => $this->unit_price,
             'qty' => $this->qty,
             'line_total' => $this->line_total,
+            'created_at' => $this->created_at,
             'product' => $this->whenLoaded('product', function () {
                 return new ProductResource($this->product);
             }),

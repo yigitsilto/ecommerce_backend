@@ -40,6 +40,7 @@ class ProductResource extends JsonResource
             'has_percentage_special_price' => $this->has_percentage_special_price,
             'special_price_percent' => $this->special_price_percent,
             'normalPrice' => $this->normalPrice,
+            'created_at' => $this->created_at,
             'name' => $this->name,
             'options' => $this->whenLoaded('options', function () {
                 return $this->options;

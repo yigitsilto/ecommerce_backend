@@ -20,12 +20,12 @@ class BasketController extends Controller
 
     public function getBasketForCreditCard(int $id)
     {
-        return $this->basketService->getBasketForCreditCard($id);
+        return response()->json(['data' => $this->basketService->getBasketForCreditCard($id)]);
     }
 
     public function index()
     {
-        return $this->basketService->index();
+        return response()->json($this->basketService->index());
     }
 
     public function delete(int $basket)

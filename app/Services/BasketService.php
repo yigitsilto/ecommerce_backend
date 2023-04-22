@@ -10,11 +10,11 @@ use Illuminate\Http\Request;
 interface BasketService
 {
 
-    public function getBasketForCreditCard(int $id) :  \Illuminate\Http\JsonResponse;
+    public function getBasketForCreditCard(int $id);
 
-    public function index(): \Illuminate\Http\JsonResponse;
+    public function index();
 
-    public function store(StoreBasketRequets $request): \Illuminate\Http\JsonResponse;
+    public function store(StoreBasketRequets $request);
 
     public function delete(int $basket);
 

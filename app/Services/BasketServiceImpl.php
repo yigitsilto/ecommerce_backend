@@ -15,25 +15,27 @@ use Modules\Support\Money;
 
 class BasketServiceImpl implements BasketService
 {
-    public function getBasketForCreditCard($id): \Illuminate\Http\JsonResponse
+    public function getBasketForCreditCard($id)
     {
         $order = OrderSnaphot::query()
                              ->where('id', $id)
                              ->first();
         if (!$order) {
-            return response()->json(['error' => 'Not found'], 404);
+            return BaseException::responseServerError('Order not found');
         }
 
         if ($order->user_id != auth('api')
                 ->user()
                 ->getAuthIdentifier()) {
-            return response()->json(['error' => 'Not authorized'], 405);
+            return BaseException::responseServerError('You are not authorized to view this order');
         }
-        return response()->json(['data' => json_decode($order->order)]);
+
+        return json_decode($order->order);
+
 
     }
 
-    public function index(): \Illuminate\Http\JsonResponse
+    public function index()
     {
         $basket = Basket::query()
                         ->with('product')
@@ -81,11 +83,10 @@ class BasketServiceImpl implements BasketService
                                            ''); // converts 1000 to 10,000.0000
         }
 
-
-        return response()->json([
-                                    'basket' => BasketResource::collection($basket),
-                                    'free_shipping_amount' => $decimalNumber
-                                ]);
+        return [
+            'basket' => BasketResource::collection($basket),
+            'free_shipping_amount' => $decimalNumber
+        ];
     }
 
     public function delete(int $basket)
@@ -103,7 +104,7 @@ class BasketServiceImpl implements BasketService
         }
     }
 
-    public function store(StoreBasketRequets $request): \Illuminate\Http\JsonResponse
+    public function store(StoreBasketRequets $request)
     {
         $checkOptionStock = $this->checkOptionStock($request->options, $request->quantity); // varyasyonun stok kontrolü
 
@@ -123,14 +124,14 @@ class BasketServiceImpl implements BasketService
             $basket->quantity++;
             $basket->save();
         } else {
-            $basket = Basket::create([
-                                         'user_id' => auth('api')->id(),
-                                         'product_id' => $request->product_id,
-                                         'quantity' => $request->quantity,
-                                         'options' => json_encode($request->options)
-                                     ]);
+            Basket::create([
+                               'user_id' => auth('api')->id(),
+                               'product_id' => $request->product_id,
+                               'quantity' => $request->quantity,
+                               'options' => json_encode($request->options)
+                           ]);
         }
-        return response()->json($basket);
+        return true;
     }
 
     protected function checkOptionStock($options, $qty): bool

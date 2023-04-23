@@ -24,25 +24,25 @@ class CurrencyServiceProvider extends ServiceProvider
             return;
         }
 
-        TabManager::register('currency_rates', CurrencyRateTabs::class);
+//        TabManager::register('currency_rates', CurrencyRateTabs::class);
 
-        $this->addAdminAssets('admin.currency_rates.index', ['admin.currency.js']);
+//        $this->addAdminAssets('admin.currency_rates.index', ['admin.currency.js']);
 
-        if ($this->app->runningInConsole() && setting('auto_refresh_currency_rates', false)) {
-            $this->commands(RefreshCurrencyRatesCommand::class);
-
-            $this->registerScheduler();
-        }
+//        if ($this->app->runningInConsole() && setting('auto_refresh_currency_rates', false)) {
+//            $this->commands(RefreshCurrencyRatesCommand::class);
+//
+//            $this->registerScheduler();
+//        }
     }
 
     private function registerScheduler()
     {
-        $this->app->booted(function ($app) {
-            $frequency = setting('auto_refresh_currency_rate_frequency');
-
-            if (in_array($frequency, ['daily', 'weekly', 'monthly'])) {
-                $app[Schedule::class]->command(RefreshCurrencyRatesCommand::class)->{$frequency}();
-            }
-        });
+//        $this->app->booted(function ($app) {
+//            $frequency = setting('auto_refresh_currency_rate_frequency');
+//
+////            if (in_array($frequency, ['daily', 'weekly', 'monthly'])) {
+////                $app[Schedule::class]->command(RefreshCurrencyRatesCommand::class)->{$frequency}();
+////            }
+//        });
     }
 }

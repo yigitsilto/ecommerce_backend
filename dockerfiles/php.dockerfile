@@ -7,7 +7,7 @@ RUN apk update && apk add --no-cache \
     icu-dev \
     libpng-dev \
     freetype-dev \
-    && docker-php-ext-install pdo pdo_mysql intl soap gd opcache
+    && docker-php-ext-install pdo pdo_mysql intl soap  gd opcache
 
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
@@ -15,7 +15,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
     && chmod +x /usr/local/bin/composer \
     && if [ ! -x "/usr/local/bin/composer" ]; then echo "Composer permission change failed"; exit 1; fi
 
-# Configure OPcache and JIT
-COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
-RUN echo "opcache.jit_buffer_size=100M" >> /usr/local/etc/php/conf.d/opcache.ini
-RUN echo "opcache.jit=1235" >> /usr/local/etc/php/conf.d/opcache.ini
+## Configure OPcache and JIT
+#COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+#RUN echo "opcache.jit_buffer_size=100M" >> /usr/local/etc/php/conf.d/opcache.ini
+#RUN echo "opcache.jit=1235" >> /usr/local/etc/php/conf.d/opcache.ini

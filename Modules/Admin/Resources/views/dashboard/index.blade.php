@@ -5,6 +5,10 @@
 @section('content_header')
 {{--    <h2 class="pull-left">{{ trans('admin::dashboard.dashboard') }}</h2> asdasdasd--}}
     <h2 class="pull-left">Anasayfa</h2>
+<?php
+$status = opcache_get_status();
+var_dump($status);
+?>
 @endsection
 
 @section('content')

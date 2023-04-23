@@ -17,6 +17,8 @@ use FleetCart\Services\CheckoutService;
 use FleetCart\Services\CheckoutServiceImpl;
 use FleetCart\Services\ParamPosService;
 use FleetCart\Services\ParamPosServiceImpl;
+use FleetCart\Services\RefundService;
+use FleetCart\Services\RefundServiceImpl;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -35,6 +37,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(ParamPosService::class, ParamPosServiceImpl::class);
         $this->app->bind(CardTypeBinApiService::class,CardTypeBinApiServiceImpl::class);
         $this->app->bind(BasketService::class,BasketServiceImpl::class);
+        $this->app->bind(RefundService::class,RefundServiceImpl::class);
 
     }
 

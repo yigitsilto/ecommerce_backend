@@ -111,6 +111,12 @@ Route::group(['middleware' => JWTMiddleware::class], function () {
     Route::get('my-orders',[\FleetCart\Http\Controllers\OrderController::class,'index']);
     Route::get('findOrderById/{id}',[\FleetCart\Http\Controllers\OrderController::class,'findById']);
 
+
+    /** Refund Controller */
+    Route::get('refunds',[\FleetCart\Http\Controllers\RefundController::class,'index']);
+    Route::post('refunds',[\FleetCart\Http\Controllers\RefundController::class,'store']);
+    /** Refund Controller end */
+
 });
 
 

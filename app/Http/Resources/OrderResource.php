@@ -53,6 +53,7 @@ class OrderResource extends JsonResource
             'installment' => $this->installment,
             'totalWithCommission' => $this->totalWithCommission,
             'created_at' => $this->created_at,
+            'can_refund' => $this->created_at->gt(now()->subDays(30)),
             'products' =>OrderProductsResource::collection($this->products),
 
         ];

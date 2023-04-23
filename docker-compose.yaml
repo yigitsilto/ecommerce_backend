@@ -25,13 +25,6 @@ services:
       - ./env/mysql.env
     volumes:
       - ./sql/:/docker-entrypoint-initdb.d
-  artisan:
-    build:
-      context: ./dockerfiles
-      dockerfile: php.dockerfile
-    volumes:
-      - ./:/var/www/html
-    entrypoint: ["php","/var/www/html/artisan"]
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: pma

@@ -1,11 +1,11 @@
 {
-    "name": "envaysoft/fleetcart",
-    "description": "The FleetCart E-Commerce System.",
+    "name": "91ajans/ecommerce",
+    "description": "E-Commerce App",
     "type": "project",
     "authors": [
         {
-            "name": "Mehedi Hassan",
-            "email": "MehediDracula@gmail.com"
+            "name": "Yigit Silto",
+            "email": "yigitsilto@gmail.com"
         }
     ],
     "require": {

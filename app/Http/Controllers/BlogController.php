@@ -3,13 +3,19 @@
 namespace FleetCart\Http\Controllers;
 
 use FleetCart\Blog;
-use FleetCart\Services\AddressService;
-use Illuminate\Http\Request;
-use Modules\Address\Entities\Address;
 
 class BlogController extends Controller
 {
-    public function index(){
-        return response()->json(Blog::query()->paginate(12));
+    public function findById($id)
+    {
+        return response()->json(Blog::query()
+                                    ->where('id', $id)
+                                    ->first());
+    }
+
+    public function index()
+    {
+        return response()->json(Blog::query()
+                                    ->paginate(10));
     }
 }

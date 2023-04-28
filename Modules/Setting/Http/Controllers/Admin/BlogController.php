@@ -5,6 +5,7 @@ namespace Modules\Setting\Http\Controllers\Admin;
 use FleetCart\Blog;
 use FleetCart\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Entities\File;
@@ -12,6 +13,10 @@ use Modules\Product\Entities\EntityFiles;
 
 class BlogController extends Controller
 {
+
+    private function redisUpdate(){
+        Redis::del('blogs');
+    }
 
     public function index()
     {
@@ -24,9 +29,10 @@ class BlogController extends Controller
     public function store(Request $request)
     {
 
+        $this->redisUpdate();
         $this->validate($request, [
             'title' => 'required',
-            'short_description' => 'required',
+            'short_description' => 'required|max:100',
             'description' => 'required',
             'cover_image' => 'required|file'
         ]);
@@ -49,7 +55,7 @@ class BlogController extends Controller
                     ->create([
                                  'title' => $request->title,
                                  'short_description' => $request->short_description,
-                                 'slug' => Str::slug($request->title . "-" . Str::random(5)),
+                                 'slug' => Str::slug($request->title),
                                  'description' => $request->description,
                                  'cover_image' => $file->path
                              ]);
@@ -63,7 +69,7 @@ class BlogController extends Controller
                                         'zone' => 'base_image'
                                     ]);
 
-        return redirect()->back();
+        return redirect()->route('admin.blogs');
 
     }
 
@@ -74,10 +80,11 @@ class BlogController extends Controller
 
     public function update(Request $request, $id)
     {
+        $this->redisUpdate();
 
         $this->validate($request, [
             'title' => 'required',
-            'short_description' => 'required',
+            'short_description' => 'required|max:300',
             'description' => 'required',
             'cover_image' => 'nullable'
         ]);
@@ -134,12 +141,14 @@ class BlogController extends Controller
         }
 
 
-        return redirect()->back();
+        return redirect()->route('admin.blogs');
 
     }
 
     public function delete($id)
     {
+        $this->redisUpdate();
+
         Blog::query()
             ->where('id', $id)
             ->delete();

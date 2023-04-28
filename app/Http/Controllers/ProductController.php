@@ -2,10 +2,10 @@
 
 namespace FleetCart\Http\Controllers;
 
+use FleetCart\Blog;
 use FleetCart\Http\Requests\CategoryProductListRequest;
 use FleetCart\Http\Resources\CategoryResource;
 use FleetCart\Http\Resources\HomePageProductsResource;
-use FleetCart\Http\Resources\ProductResource;
 use FleetCart\Http\Resources\ProductsByCategoryCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
@@ -38,12 +38,14 @@ class ProductController extends Controller
     {
         $products = unserialize(Redis::get('products'));
         $sliders = unserialize(Redis::get('sliders'));
+        $blogs = unserialize(Redis::get('blogs'));
 
         if (!$products) {
             $products = Product::query()
                                ->where('is_popular', 1)
                                ->inRandomOrder()
-                               ->limit(20)->get();
+                               ->limit(20)
+                               ->get();
             Redis::set('products', serialize($products));
         }
 
@@ -55,11 +57,28 @@ class ProductController extends Controller
             Redis::set('sliders', serialize($sliders));
         }
 
+        if (!$blogs) {
+            $blogs = Blog::query()
+                         ->select([
+                                      'id',
+                                      'title',
+                                      'slug',
+                                      'short_description',
+                                      'cover_image',
+                                      'created_at'
+                                  ])
+                         ->limit(2)
+                         ->get();
+            Redis::set('blogs', serialize($blogs));
+        }
+
+
         event(new ShowingProductList($products));
 
         return response()->json([
                                     'products' => HomePageProductsResource::collection($products),
                                     'sliders' => $sliders,
+                                    'blogs' => $blogs,
                                 ]);
     }
 
@@ -85,23 +104,14 @@ class ProductController extends Controller
 
         $data = [
             'product' => $product,
-//            'relatedProducts' => $relatedProducts,
-//            'upSellProducts' => $upSellProducts,
+            //            'relatedProducts' => $relatedProducts,
+            //            'upSellProducts' => $upSellProducts,
             //'review' => $review
         ];
 
         return response()->json($data);
 
 
-    }
-
-    private function getReviewData(Product $product)
-    {
-        if (!setting('reviews_enabled')) {
-            return;
-        }
-
-        return Review::countAndAvgRating($product);
     }
 
     public function categoriesForProduct()
@@ -134,7 +144,10 @@ class ProductController extends Controller
     public function getProductsByCategorySlug($slug, CategoryProductListRequest $request)
     {
         $products = Product::query()
-                            ->with(['brand', 'categories'])
+                           ->with([
+                                      'brand',
+                                      'categories'
+                                  ])
                            ->whereHas('categories', function ($query) use ($slug) {
                                $query->where('slug', $slug);
                            });
@@ -236,6 +249,15 @@ class ProductController extends Controller
     public function suggestions(Request $request)
     {
 
+    }
+
+    private function getReviewData(Product $product)
+    {
+        if (!setting('reviews_enabled')) {
+            return;
+        }
+
+        return Review::countAndAvgRating($product);
     }
 
 

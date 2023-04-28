@@ -38,6 +38,8 @@ Route::get('page/{slug}',[\FleetCart\Http\Controllers\SettingsController::class,
 Route::get('shippings', [CheckoutController::class, 'shippingsAndPaymentMethods']);
 Route::post('successPayment',[\FleetCart\Http\Controllers\ParamPosController::class,'successPayment']);
 Route::post('errorPayment',[\FleetCart\Http\Controllers\ParamPosController::class,'errorPayment']);
+Route::get('blog/{id}',[\FleetCart\Http\Controllers\BlogController::class,'findById']);
+Route::get('blogs',[\FleetCart\Http\Controllers\BlogController::class,'index']);
 
 /** Param Pos Controller **/
 Route::get('param',[\FleetCart\Http\Controllers\ParamPosController::class, 'index']);

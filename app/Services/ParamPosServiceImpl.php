@@ -135,7 +135,7 @@ XML;
             "errorUrl" => env("API_URL") . "errorPayment",
             "succesUrl" => env("API_URL") . "successPayment",
             "orderID" => rand(0, 999999),
-            "paymentUrl" => "http://localhost:3000/payment?order=" . $checkoutRequest['Siparis_ID'],
+            "paymentUrl" => "https://ecommerce.piza.com.tr/payment?order=" . $checkoutRequest['Siparis_ID'],
             "orderExplanation" => date("d-m-Y H:i:s") . " tarihindeki ödeme",
             "installment" => $checkoutRequest['Taksit'],
             "transactionPayment" => $this->tlFormat($totalPrice),

@@ -52,7 +52,6 @@ class MediaController
             'mime' => $file->getClientMimeType(),
             'size' => $file->getSize(),
         ]);
-        dd($file);
     }
 
     /**

@@ -28,6 +28,16 @@ class SidebarExtender extends BaseSidebarExtender
                     $this->auth->hasAccess('admin.settings.edit')
                 );
             });
+
+            $group->item('Blog', function (Item $item) {
+                $item->weight(25);
+                $item->icon('fa fa-cogs');
+                $item->route('admin.blogs');
+                $item->authorize(
+                    $this->auth->hasAccess('admin.settings.edit')
+                );
+            });
+
         });
 
     }

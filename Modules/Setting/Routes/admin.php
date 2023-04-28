@@ -38,3 +38,42 @@ Route::post('company-delete/{id}', [
     'uses' => 'SettingController@deleteCompany',
     'middleware' => 'can:admin.settings.edit',
 ]);
+
+
+Route::get('blogs', [
+    'as' => 'admin.blogs',
+    'uses' => 'BlogController@index',
+    'middleware' => 'can:admin.settings.edit',
+]);
+
+
+Route::get('blogs/create', [
+    'as' => 'admin.blogs.create',
+    'uses' => 'BlogController@create',
+    'middleware' => 'can:admin.settings.edit',
+]);
+
+Route::post('blogs', [
+    'as' => 'admin.blogs.store',
+    'uses' => 'BlogController@store',
+    'middleware' => 'can:admin.settings.edit',
+]);
+
+Route::get('blogs/{id}', [
+    'as' => 'admin.blogs.edit',
+    'uses' => 'BlogController@edit',
+    'middleware' => 'can:admin.settings.edit',
+]);
+
+Route::post('blogs/{id}', [
+    'as' => 'admin.blogs.update',
+    'uses' => 'BlogController@update',
+    'middleware' => 'can:admin.settings.edit',
+]);
+
+Route::post('blogs/{id}/delete', [
+    'as' => 'admin.blogs.delete',
+    'uses' => 'BlogController@delete',
+    'middleware' => 'can:admin.settings.edit',
+]);
+

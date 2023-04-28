@@ -1,10 +1,9 @@
-
 @extends('admin::layout')
 
 @section('title', trans('setting::settings.settings'))
 
 @section('content_header')
-    <h3>Kargo Firmaları</h3>
+    <h3>Blog</h3>
 
     <ol class="breadcrumb">
         <li><a href="{{ route('admin.dashboard.index') }}">{{ trans('admin::dashboard.dashboard') }}</a></li>
@@ -14,39 +13,45 @@
 
 @section('content')
 
-
     @component('admin::components.page.index_table')
-        @slot('resource', 'settings.companies')
+        @slot('resource', 'blogs')
         @slot('buttons', ['create'])
-        @slot('name', 'Kargo Firması Ekle')
+        @slot('name', 'Blog Ekle')
 
         @slot('thead')
             <tr>
 
-                <th>Kargo Firma adı</th>
-                <th>Kargo Firma Fiyatı</th>
+                <th>Başlık</th>
+                <th data-sort>Tarih</th>
+                <th></th>
                 <th></th>
             </tr>
         @endslot
 
         @slot('slot')
-            @foreach($company as $item)
-
+            @foreach($blog as $item)
                 <tr>
-                    <td>{{$item->name}}</td>
-                    <td>{{$item->price->amount}}</td>
-
+                    <td>{{$item->title}}</td>
+                    <td>{{$item->created_at}}</td>
                     <td>
-                        <form action="{{route('admin.settings.deleteCompany',$item->id)}}" method="POST">
+                        <a href="{{route('admin.blogs.edit',$item->id)}}" class="btn btn-primary">Düzenle</a>
+                    </td>
+                    <td>
+                        <form action="{{route('admin.blogs.delete',$item->id)}}" method="POST">
                             {{ csrf_field() }}
 
                             <button class="btn btn-danger" type="submit">Sil</button>
                         </form>
-
                     </td>
                 </tr>
+
             @endforeach
+
         @endslot
+        @slot('tfoot')
+            {{$blog->links()}}
+        @endslot
+
     @endcomponent
 
 @endsection

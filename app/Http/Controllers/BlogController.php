@@ -16,6 +16,12 @@ class BlogController extends Controller
     public function index()
     {
         return response()->json(Blog::query()
+                                    ->select([
+                                                 'id',
+                                                 'title',
+                                                 'short_description',
+                                                 'cover_image'
+                                             ])
                                     ->paginate(10));
     }
 }

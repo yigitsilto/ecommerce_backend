@@ -3,7 +3,7 @@
         {{ Form::text('sku', trans('product::attributes.sku'), $errors, $product) }}
         {{ Form::select('manage_stock', trans('product::attributes.manage_stock'), $errors, [1 => 'Stok Takibi'], $product) }}
 
-        <div class="{{ old('manage_stock', $product->manage_stock) ? '' : 'hide' }}" id="qty-field">
+        <div  id="qty-field">
             {{ Form::number('qty', trans('product::attributes.qty'), $errors, $product, ['required' => true]) }}
         </div>
 

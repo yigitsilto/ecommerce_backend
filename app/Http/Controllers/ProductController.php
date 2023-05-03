@@ -36,21 +36,14 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $data = unserialize(Redis::get('data'));;
 
-        if (!$data) {
-
-            $products = Product::query()
-                               ->where('is_popular', 1)
-                               ->inRandomOrder()
-                               ->limit(20)
-                               ->get();
-
-            $sliders = Slider::query()
-                             ->limit(3)
-                             ->get();
+        $products = unserialize(Redis::get('products'));
+        $sliders = unserialize(Redis::get('sliders'));
+        $blogs = unserialize(Redis::get('blogs'));
+        $popularCategories = unserialize(Redis::get('popularCategories'));
 
 
+        if (!$popularCategories) {
             $popularCategories = Category::inRandomOrder()
                                          ->whereHas('products')
                                          ->with('files')
@@ -58,7 +51,28 @@ class ProductController extends Controller
                                          ->where('is_popular', true)
                                          ->limit(6)
                                          ->get();
+            Redis::set('popularCategories', serialize($popularCategories));
+        }
 
+
+        if (!$products) {
+            $products = Product::query()
+                               ->where('is_popular', 1)
+                               ->inRandomOrder()
+                               ->limit(20)
+                               ->get();
+            Redis::set('products', serialize($products));
+        }
+
+
+        if (!$sliders) {
+            $sliders = Slider::query()
+                             ->limit(3)
+                             ->get();
+            Redis::set('sliders', serialize($sliders));
+        }
+
+        if (!$blogs) {
             $blogs = Blog::query()
                          ->select([
                                       'id',
@@ -70,21 +84,17 @@ class ProductController extends Controller
                                   ])
                          ->limit(2)
                          ->get();
-
-            $data = [
-                'products' => $products,
-                'sliders' => $sliders,
-                'blogs' => $blogs,
-                'categories' => $popularCategories
-            ];
-            Redis::set('data', serialize($data));
+            Redis::set('blogs', serialize($blogs));
         }
 
-        $data['products'] = HomePageProductsResource::collection($data['products']);
 
+        event(new ShowingProductList($products));
 
         return response()->json([
-                                    $data
+                                    'products' => HomePageProductsResource::collection($products),
+                                    'sliders' => $sliders,
+                                    'blogs' => $blogs,
+                                    'categories' => $popularCategories
                                 ]);
     }
 

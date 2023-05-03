@@ -2,6 +2,7 @@
 
 namespace Modules\Menu\Http\Controllers\Admin;
 
+use FleetCart\Helpers\RedisHelper;
 use Illuminate\Support\Facades\Redis;
 use Modules\Admin\Ui\Facades\TabManager;
 use Modules\Menu\Entities\MenuItem;
@@ -19,12 +20,7 @@ class MenuItemController
     public function store($menuId, SaveMenuItemRequest $request)
     {
 
-        Redis::del('products');
-        Redis::del('settings');
-        Redis::del('sliders');
-        Redis::del('categoryWithProducts');
-        Redis::del('brands');
-        Redis::del('popularCategories');
+        RedisHelper::redisClear();
         $menuItem = MenuItem::create(
             $this->prepare($menuId, $request->all())
         );
@@ -103,12 +99,7 @@ class MenuItemController
      */
     public function update($menuId, $id, SaveMenuItemRequest $request)
     {
-        Redis::del('products');
-        Redis::del('settings');
-        Redis::del('sliders');
-        Redis::del('categoryWithProducts');
-        Redis::del('brands');
-        Redis::del('popularCategories');
+        RedisHelper::redisClear();
         MenuItem::withoutGlobalScope('active')
                 ->findOrFail($id)
                 ->update(

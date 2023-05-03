@@ -2,6 +2,7 @@
 
 namespace Modules\Setting\Http\Controllers\Admin;
 
+use FleetCart\Helpers\RedisHelper;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Redis;
 use Modules\Admin\Ui\Facades\TabManager;
@@ -55,12 +56,7 @@ class SettingController
     }
 
     private function redisUpdate(){
-        Redis::del('products');
-        Redis::del('settings');
-        Redis::del('sliders');
-        Redis::del('categoryWithProducts');
-        Redis::del('brands');
-        Redis::del('popularCategories');
+        RedisHelper::redisClear();
     }
 
     private function handleMaintenanceMode($request)

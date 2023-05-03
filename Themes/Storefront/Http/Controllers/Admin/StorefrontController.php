@@ -2,6 +2,7 @@
 
 namespace Themes\Storefront\Http\Controllers\Admin;
 
+use FleetCart\Helpers\RedisHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Modules\Admin\Ui\Facades\TabManager;
@@ -24,11 +25,7 @@ class StorefrontController
     }
 
     private function redisUpdate(){
-        Redis::del('products');
-        Redis::del('settings');
-        Redis::del('sliders');
-        Redis::del('categoryWithProducts');
-        Redis::del('popularCategories');
+        RedisHelper::redisClear();
     }
 
     /**

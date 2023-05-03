@@ -3,6 +3,7 @@
 namespace Modules\Setting\Http\Controllers\Admin;
 
 use FleetCart\Blog;
+use FleetCart\Helpers\RedisHelper;
 use FleetCart\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
@@ -14,9 +15,6 @@ use Modules\Product\Entities\EntityFiles;
 class BlogController extends Controller
 {
 
-    private function redisUpdate(){
-        Redis::del('blogs');
-    }
 
     public function index()
     {
@@ -29,7 +27,7 @@ class BlogController extends Controller
     public function store(Request $request)
     {
 
-        $this->redisUpdate();
+        RedisHelper::redisClear();
         $this->validate($request, [
             'title' => 'required',
             'short_description' => 'required|max:100',
@@ -80,8 +78,7 @@ class BlogController extends Controller
 
     public function update(Request $request, $id)
     {
-        $this->redisUpdate();
-
+        RedisHelper::redisClear();
         $this->validate($request, [
             'title' => 'required',
             'short_description' => 'required|max:300',
@@ -147,8 +144,7 @@ class BlogController extends Controller
 
     public function delete($id)
     {
-        $this->redisUpdate();
-
+        RedisHelper::redisClear();
         Blog::query()
             ->where('id', $id)
             ->delete();

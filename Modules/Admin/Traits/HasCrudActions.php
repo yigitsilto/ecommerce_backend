@@ -2,6 +2,7 @@
 
 namespace Modules\Admin\Traits;
 
+use FleetCart\Helpers\RedisHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Modules\Support\Search\Searchable;
@@ -62,12 +63,7 @@ trait HasCrudActions
 
         $this->searchable($entity);
 
-        Redis::del('products');
-        Redis::del('settings');
-        Redis::del('sliders');
-        Redis::del('categoryWithProducts');
-        Redis::del('brands');
-        Redis::del('popularCategories');
+        RedisHelper::redisClear();
 
 
         if (method_exists($this, 'redirectTo')) {
@@ -129,12 +125,7 @@ trait HasCrudActions
 
         $this->searchable($entity);
 
-        Redis::del('products');
-        Redis::del('settings');
-        Redis::del('sliders');
-        Redis::del('categoryWithProducts');
-        Redis::del('brands');
-        Redis::del('popularCategories');
+        RedisHelper::redisClear();
 
         if (method_exists($this, 'redirectTo')) {
             return $this->redirectTo($entity)

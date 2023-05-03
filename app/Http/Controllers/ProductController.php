@@ -39,6 +39,20 @@ class ProductController extends Controller
         $products = unserialize(Redis::get('products'));
         $sliders = unserialize(Redis::get('sliders'));
         $blogs = unserialize(Redis::get('blogs'));
+        $popularCategories = unserialize(Redis::get('popularCategories'));
+
+
+        if (!$popularCategories) {
+            $popularCategories = Category::inRandomOrder()
+                                         ->whereHas('products')
+                                         ->with('files')
+                                         ->where('is_active', true)
+                                         ->where('is_popular', true)
+                                         ->limit(6)
+                                         ->get();
+            Redis::set('popularCategories', serialize($popularCategories));
+        }
+
 
         if (!$products) {
             $products = Product::query()
@@ -79,6 +93,7 @@ class ProductController extends Controller
                                     'products' => HomePageProductsResource::collection($products),
                                     'sliders' => $sliders,
                                     'blogs' => $blogs,
+                                    'categories' => $popularCategories
                                 ]);
     }
 

@@ -28,6 +28,7 @@ class StorefrontController
         Redis::del('settings');
         Redis::del('sliders');
         Redis::del('categoryWithProducts');
+        Redis::del('popularCategories');
     }
 
     /**

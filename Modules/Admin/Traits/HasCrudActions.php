@@ -67,6 +67,8 @@ trait HasCrudActions
         Redis::del('sliders');
         Redis::del('categoryWithProducts');
         Redis::del('brands');
+        Redis::del('popularCategories');
+
 
         if (method_exists($this, 'redirectTo')) {
             return $this->redirectTo($entity);
@@ -132,6 +134,7 @@ trait HasCrudActions
         Redis::del('sliders');
         Redis::del('categoryWithProducts');
         Redis::del('brands');
+        Redis::del('popularCategories');
 
         if (method_exists($this, 'redirectTo')) {
             return $this->redirectTo($entity)

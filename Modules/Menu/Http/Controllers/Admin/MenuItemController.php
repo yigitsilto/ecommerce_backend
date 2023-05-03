@@ -24,6 +24,7 @@ class MenuItemController
         Redis::del('sliders');
         Redis::del('categoryWithProducts');
         Redis::del('brands');
+        Redis::del('popularCategories');
         $menuItem = MenuItem::create(
             $this->prepare($menuId, $request->all())
         );
@@ -107,6 +108,7 @@ class MenuItemController
         Redis::del('sliders');
         Redis::del('categoryWithProducts');
         Redis::del('brands');
+        Redis::del('popularCategories');
         MenuItem::withoutGlobalScope('active')
                 ->findOrFail($id)
                 ->update(

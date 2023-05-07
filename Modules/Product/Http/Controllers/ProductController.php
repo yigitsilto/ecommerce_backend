@@ -52,6 +52,7 @@ class ProductController extends Controller
         $upSellProducts = $product->upSellProducts()->forCard()->get();
         $review = $this->getReviewData($product);
 
+
         event(new ProductViewed($product));
 
         return view('public.products.show', compact('product', 'relatedProducts', 'upSellProducts', 'review'));

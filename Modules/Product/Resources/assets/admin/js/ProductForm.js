@@ -3,8 +3,7 @@ export default class {
         this.managerStock();
 
         window.admin.removeSubmitButtonOffsetOn([
-            '#images', '#downloads', '#attributes', '#options',
-            '#related_products', '#up_sells', '#cross_sells', '#reviews',
+            '#images', '#downloads', '#attributes', '#options', '#reviews',
         ]);
 
         $('#product-create-form, #product-edit-form').on('submit', this.submit);
@@ -24,10 +23,6 @@ export default class {
         e.preventDefault();
 
         DataTable.removeLengthFields();
-
-        window.form.appendHiddenInputs('#product-create-form, #product-edit-form', 'up_sells', DataTable.getSelectedIds('#up_sells .table'));
-        window.form.appendHiddenInputs('#product-create-form, #product-edit-form', 'cross_sells', DataTable.getSelectedIds('#cross_sells .table'));
-        window.form.appendHiddenInputs('#product-create-form, #product-edit-form', 'related_products', DataTable.getSelectedIds('#related_products .table'));
 
         e.currentTarget.submit();
     }

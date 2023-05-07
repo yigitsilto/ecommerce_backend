@@ -40,16 +40,15 @@ class SettingsController extends Controller
 
     public function index()
     {
-
         // set redis
-
         $settings = json_decode(Redis::get('settings'));
 
         if (!$settings) {
             $settings = [
                 'banners' => Banner::getSliderBanners(),
                 'settings' => [
-                    'themeColor' => $this->getThemeColor(),
+                    'primaryColor' => $this->getThemeColor(),
+                    'secondaryColor' => $this->getSecondaryColor(),
                     'favicon' => $this->getFavicon(),
                     'logo' => $this->getHeaderLogo(),
                     'copyrightText' => $this->getCopyrightText(),
@@ -78,8 +77,21 @@ class SettingsController extends Controller
 
     private function getThemeColor()
     {
+
         try {
+            return storefront_theme_color();
             return new Color(storefront_theme_color());
+        } catch (\Exception $e) {
+            return new Color('#0068e1');
+        }
+    }
+
+    private function getSecondaryColor()
+    {
+
+        try {
+            return mail_theme_color();
+            return new Color(mail_theme_color());
         } catch (\Exception $e) {
             return new Color('#0068e1');
         }

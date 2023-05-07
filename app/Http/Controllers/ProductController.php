@@ -57,6 +57,7 @@ class ProductController extends Controller
 
         if (!$products) {
             $products = Product::query()
+                ->with('brand')
                                ->where('is_popular', 1)
                                ->inRandomOrder()
                                ->limit(20)
@@ -108,13 +109,9 @@ class ProductController extends Controller
     {
 
         $product = Product::findBySlug($slug);
-//        $relatedProducts = $product->relatedProducts()
-//                                   ->forCard()
-//                                   ->get();
-//        $upSellProducts = $product->upSellProducts()
-//                                  ->forCard()
-//                                  ->get();
-//        $review = $this->getReviewData($product);
+
+
+
 
         event(new ProductViewed($product));
 

@@ -30,6 +30,7 @@ trait HasCrudActions
             return $this->getModel()->table($request);
         }
 
+
         return view("{$this->viewPath}.index");
     }
 
@@ -55,6 +56,7 @@ trait HasCrudActions
      */
     public function store()
     {
+        dd(2);
         $this->disableSearchSyncing();
 
         $entity = $this->getModel()->create(

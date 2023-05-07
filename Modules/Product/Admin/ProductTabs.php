@@ -23,10 +23,10 @@ class ProductTabs extends Tabs
             //->add($this->seo());
 
         $this->group('advanced_information', trans('product::products.tabs.group.advanced_information'))
-            ->add($this->relatedProducts())
-            ->add($this->upSells())
-            ->add($this->crossSells());
-          //  ->add($this->additional());
+//            ->add($this->relatedProducts())
+//            ->add($this->upSells())
+//            ->add($this->crossSells())
+            ->add($this->additional());
     }
 
     private function general()

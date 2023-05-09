@@ -101,11 +101,17 @@ class ProductController extends Controller
                                 ]);
     }
 
-    public function relatedProducts($slug){
+    public function relatedProducts($slug)
+    {
         $product = Product::findBySlug($slug);
 
-        $relatedProducts = RelatedProduct::query()->with(['product','product.brand'])->where('product_id', $product->id)
-                                                                         ->paginate(12);
+        $relatedProducts = RelatedProduct::query()
+                                         ->with([
+                                                    'product',
+                                                    'product.brand'
+                                                ])
+                                         ->where('product_id', $product->id)
+                                         ->paginate(12);
 
         return response()->json(new RelatedProductResourceCollection($relatedProducts));
 

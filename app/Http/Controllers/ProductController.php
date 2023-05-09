@@ -105,6 +105,7 @@ class ProductController extends Controller
     {
         $product = Product::findBySlug($slug);
 
+
         $relatedProducts = RelatedProduct::query()
                                          ->with([
                                                     'product',
@@ -112,6 +113,7 @@ class ProductController extends Controller
                                                 ])
                                          ->where('product_id', $product->id)
                                          ->paginate(12);
+
 
         return response()->json(new RelatedProductResourceCollection($relatedProducts));
 
@@ -236,6 +238,7 @@ class ProductController extends Controller
     public function getProductsByBrandSlug($slug, CategoryProductListRequest $request)
     {
         $products = Product::query()
+                           ->with('brand')
                            ->whereHas('brand', function ($query) use ($slug) {
                                $query->where('slug', $slug);
                            });
@@ -267,7 +270,7 @@ class ProductController extends Controller
 
         return response()->json([
                                     'products' => $products->paginate(12),
-                                    'categories' => $this->getChildCategories($category),
+                                    'categories' => Category::query()->get(),
                                     'brands' => $this->getBrands(),
                                 ]);
 

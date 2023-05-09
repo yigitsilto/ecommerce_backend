@@ -56,7 +56,6 @@ trait HasCrudActions
      */
     public function store()
     {
-        dd(2);
         $this->disableSearchSyncing();
 
         $entity = $this->getModel()->create(

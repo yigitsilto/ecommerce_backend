@@ -33,6 +33,7 @@
         "beyondcode/laravel-query-detector": "^1.0",
         "facade/ignition": "^2.3.6",
         "fakerphp/faker": "^1.9.1",
+        "laravel/sail": "^1.19",
         "nunomaduro/collision": "^5.0"
     },
     "autoload": {

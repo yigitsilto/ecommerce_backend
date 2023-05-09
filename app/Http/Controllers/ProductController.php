@@ -7,6 +7,8 @@ use FleetCart\Http\Requests\CategoryProductListRequest;
 use FleetCart\Http\Resources\CategoryResource;
 use FleetCart\Http\Resources\HomePageProductsResource;
 use FleetCart\Http\Resources\ProductsByCategoryCollection;
+use FleetCart\Http\Resources\RelatedProductResourceCollection;
+use FleetCart\RelatedProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Modules\Brand\Entities\Brand;
@@ -57,7 +59,7 @@ class ProductController extends Controller
 
         if (!$products) {
             $products = Product::query()
-                ->with('brand')
+                               ->with('brand')
                                ->where('is_popular', 1)
                                ->inRandomOrder()
                                ->limit(20)
@@ -99,6 +101,16 @@ class ProductController extends Controller
                                 ]);
     }
 
+    public function relatedProducts($slug){
+        $product = Product::findBySlug($slug);
+
+        $relatedProducts = RelatedProduct::query()->with(['product','product.brand'])->where('product_id', $product->id)
+                                                                         ->paginate(12);
+
+        return response()->json(new RelatedProductResourceCollection($relatedProducts));
+
+    }
+
     /**
      * Show the specified resource.
      *
@@ -110,14 +122,10 @@ class ProductController extends Controller
 
         $product = Product::findBySlug($slug);
 
-
-
-
         event(new ProductViewed($product));
 
         $data = [
             'product' => $product,
-            //            'relatedProducts' => $relatedProducts,
             //            'upSellProducts' => $upSellProducts,
             //'review' => $review
         ];

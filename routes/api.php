@@ -27,6 +27,7 @@ Route::get('import-kore',[\FleetCart\Http\Controllers\SettingsController::class,
 Route::resource('brands', BrandController::class)->only('index');
 Route::resource('homePage', ProductController::class)->only('index');
 Route::get('products/{slug}', [ProductController::class, 'show']);
+Route::get('relatedProducts/{slug}', [ProductController::class, 'relatedProducts']);
 Route::get('categoriesForProducts', [ProductController::class, 'categoriesForProduct']);
 Route::get('categories/{category}/products', [ProductController::class, 'getProductsByCategorySlug']);
 Route::get('brands/{brand}/products', [ProductController::class, 'getProductsByBrandSlug']);

@@ -11,5 +11,4 @@ Route::get('license', 'LicenseController@create')->name('license.create');
 Route::post('license', 'LicenseController@store')->name('license.store');
 
 Route::get('/',function (){
-    dd(2);
 });

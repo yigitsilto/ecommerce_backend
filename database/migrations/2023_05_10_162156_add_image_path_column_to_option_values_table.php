@@ -16,6 +16,7 @@ class AddImagePathColumnToOptionValuesTable extends Migration
         Schema::table('option_values', function (Blueprint $table) {
             $table->string('image')->nullable();
 
+
         });
     }
 

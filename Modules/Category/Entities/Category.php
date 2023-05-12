@@ -69,6 +69,7 @@ class Category extends Model
     protected static function booted()
     {
         static::addActiveGlobalScope();
+
     }
 
     public static function findBySlug($slug)

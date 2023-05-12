@@ -269,7 +269,7 @@ class ProductController extends Controller
         event(new ShowingProductList($products));
 
         return response()->json([
-                                    'products' => $products->paginate(12),
+                                    'products' => new ProductsByCategoryCollection($products->paginate(12)),
                                     'categories' => Category::query()->get(),
                                     'brands' => $this->getBrands(),
                                 ]);

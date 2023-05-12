@@ -93,6 +93,23 @@
             >
         </td>
 
+        <td>
+            <input
+                    style="width: 250px!important;"
+                    type="file"
+            <% if (optionId === undefined) { %>
+            name="values[<%- valueId %>][image]"
+            id="values-<%- valueId %>-image"
+            <% } else { %>
+            name="options[<%- optionId %>][values][<%- valueId %>][image]"
+            id="option-<%- optionId %>-values-<%- valueId %>-image"
+            <% } %>
+
+            class="form-control"
+            value="<%- value.image %>"
+            >
+        </td>
+
         <td class="text-center">
             <button type="button" class="btn btn-default delete-row" data-toggle="tooltip" title="{{ trans('option::options.form.delete_row') }}">
                 <i class="fa fa-trash"></i>

@@ -31,6 +31,7 @@ class SaveProductOptions
     private function saveOptions($product)
     {
         foreach (array_reset_index($this->options()) as $index => $attributes) {
+
             $attributes += ['is_global' => false, 'position' => $index];
 
             $option = $product->options()->updateOrCreate(['id' => $attributes['id'] ?? null], $attributes);

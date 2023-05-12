@@ -23,7 +23,7 @@ class OptionValue extends Model
      *
      * @var array
      */
-    protected $fillable = ['price', 'price_type', 'position','option_id', 'stock'];
+    protected $fillable = ['price', 'price_type', 'position','option_id', 'stock', 'image'];
 
     /**
      * The attributes that are translatable.

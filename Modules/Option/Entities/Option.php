@@ -2,6 +2,9 @@
 
 namespace Modules\Option\Entities;
 
+use Illuminate\Support\Facades\Storage;
+use Modules\Media\Entities\File;
+use Modules\Product\Entities\EntityFiles;
 use Modules\Support\Eloquent\Model;
 use Modules\Option\Admin\OptionTable;
 use Modules\Support\Eloquent\Translatable;
@@ -124,11 +127,51 @@ class Option extends Model
         }
 
         foreach (array_reset_index($values) as $index => $attributes) {
+            $optionValue = OptionValue::query()->find(array_get($attributes, 'id'));
+
+            $filePath = $optionValue->image ?? null;
+            if (isset($attributes['image'])) {
+                $image = $attributes['image'];
+
+                $path = Storage::putFile('media', $image);
+
+                $file = File::create([
+                                         'user_id' => auth()->id(),
+                                         'disk' => config('filesystems.default'),
+                                         'filename' => $image->getClientOriginalName(),
+                                         'path' => $path,
+                                         'extension' => $image->guessClientExtension() ?? '',
+                                         'mime' => $image->getClientMimeType(),
+                                         'size' => $image->getSize(),
+                                     ]);
+
+                $filePath = $file->path;
+
+            }
+
+
+
+            $attributes['image'] = $filePath;
+
             $attributes += ['position' => $index];
 
-            $this->values()->updateOrCreate([
-                'id' => array_get($attributes, 'id'),
-            ], $attributes);
+           $savedValue =  $this->values()
+                 ->updateOrCreate([
+                                      'id' => array_get($attributes, 'id'),
+                                  ], $attributes);
+
+
+
+            if (isset($attributes['image']) && isset($file->id)) {
+                EntityFiles::query()
+                           ->updateOrCreate([
+                                                'entity_id' => $savedValue->id,
+                                                'entity_type' => 'FleetCart\OptionValue',
+                                                'file_id' => $file->id,
+                                                'zone' => 'base_image'
+                                            ]);
+            }
+
         }
     }
 

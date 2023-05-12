@@ -4,9 +4,12 @@ namespace Modules\Admin\Traits;
 
 use FleetCart\Helpers\RedisHelper;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redis;
-use Modules\Support\Search\Searchable;
+use Illuminate\Support\Facades\Storage;
 use Modules\Admin\Ui\Facades\TabManager;
+use Modules\Media\Entities\File;
+use Modules\Product\Entities\EntityFiles;
+use Modules\Product\Entities\Product;
+use Modules\Support\Search\Searchable;
 
 trait HasCrudActions
 {
@@ -20,14 +23,15 @@ trait HasCrudActions
     {
         if ($request->has('query')) {
             return $this->getModel()
-                ->search($request->get('query'))
-                ->query()
-                ->limit($request->get('limit', 10))
-                ->get();
+                        ->search($request->get('query'))
+                        ->query()
+                        ->limit($request->get('limit', 10))
+                        ->get();
         }
 
         if ($request->has('table')) {
-            return $this->getModel()->table($request);
+            return $this->getModel()
+                        ->table($request);
         }
 
 
@@ -35,18 +39,13 @@ trait HasCrudActions
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Get a new instance of the model.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Modules\Support\Eloquent\Model
      */
-    public function create()
+    protected function getModel()
     {
-        $data = array_merge([
-            'tabs' => TabManager::get($this->getModel()->getTable()),
-            $this->getResourceName() => $this->getModel(),
-        ], $this->getFormData('create'));
-
-        return view("{$this->viewPath}.create", $data);
+        return new $this->model;
     }
 
     /**
@@ -56,11 +55,17 @@ trait HasCrudActions
      */
     public function store()
     {
+
+
         $this->disableSearchSyncing();
 
-        $entity = $this->getModel()->create(
-            $this->getRequest('store')->all()
-        );
+
+        $entity = $this->getModel()
+                       ->create(
+                           $this->getRequest('store')
+                                ->all()
+                       );
+
 
         $this->searchable($entity);
 
@@ -71,113 +76,62 @@ trait HasCrudActions
             return $this->redirectTo($entity);
         }
 
-        return redirect()->route("{$this->getRoutePrefix()}.index")
+        return redirect()
+            ->route("{$this->getRoutePrefix()}.index")
             ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
     }
 
     /**
-     * Display the specified resource.
+     * Disable search syncing for the entity.
      *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $entity = $this->getEntity($id);
-
-        if (request()->wantsJson()) {
-            return $entity;
-        }
-
-        return view("{$this->viewPath}.show")->with($this->getResourceName(), $entity);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $data = array_merge([
-            'tabs' => TabManager::get($this->getModel()->getTable()),
-            $this->getResourceName() => $this->getEntity($id),
-        ], $this->getFormData('edit', $id));
-
-        return view("{$this->viewPath}.edit", $data);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update($id)
-    {
-        $entity = $this->getEntity($id);
-
-        $this->disableSearchSyncing();
-
-        $entity->update(
-            $this->getRequest('update')->all()
-        );
-
-        $this->searchable($entity);
-
-        RedisHelper::redisClear();
-
-        if (method_exists($this, 'redirectTo')) {
-            return $this->redirectTo($entity)
-                ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
-        }
-
-
-        return redirect()->route("{$this->getRoutePrefix()}.index")
-            ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
-    }
-
-    /**
-     * Destroy resources by given ids.
-     *
-     * @param string $ids
      * @return void
      */
-    public function destroy($ids)
+    protected function disableSearchSyncing()
     {
-        $this->getModel()
-            ->withoutGlobalScope('active')
-            ->whereIn('id', explode(',', $ids))
-            ->delete();
+        if ($this->isSearchable()) {
+            $this->getModel()
+                 ->disableSearchSyncing();
+        }
     }
 
     /**
-     * Get an entity by the given id.
+     * Determine if the entity is searchable.
      *
-     * @param int $id
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return bool
      */
-    protected function getEntity($id)
+    protected function isSearchable()
     {
-        return $this->getModel()
-            ->with($this->relations())
-            ->withoutGlobalScope('active')
-            ->findOrFail($id);
+        return in_array(Searchable::class, class_uses_recursive($this->getModel()));
     }
 
     /**
-     * Get the relations that should be eager loaded.
+     * Show the form for creating a new resource.
      *
-     * @return array
+     * @return \Illuminate\Http\Response
      */
-    private function relations()
+    public function create()
     {
-        return collect($this->with ?? [])->mapWithKeys(function ($relation) {
-            return [$relation => function ($query) {
-                return $query->withoutGlobalScope('active');
-            }];
-        })->all();
+        $data = array_merge([
+                                'tabs' => TabManager::get($this->getModel()
+                                                               ->getTable()),
+                                $this->getResourceName() => $this->getModel(),
+                            ], $this->getFormData('create'));
+
+        return view("{$this->viewPath}.create", $data);
+    }
+
+    /**
+     * Get name of the resource.
+     *
+     * @return string
+     */
+    protected function getResourceName()
+    {
+        if (isset($this->resourceName)) {
+            return $this->resourceName;
+        }
+
+        return lcfirst(class_basename($this->model));
     }
 
     /**
@@ -205,27 +159,34 @@ trait HasCrudActions
     }
 
     /**
-     * Get name of the resource.
+     * Get request object
      *
-     * @return string
+     * @param string $action
+     * @return \Illuminate\Http\Request
      */
-    protected function getResourceName()
+    protected function getRequest($action)
     {
-        if (isset($this->resourceName)) {
-            return $this->resourceName;
+        if (!isset($this->validation)) {
+            return request();
         }
 
-        return lcfirst(class_basename($this->model));
+        if (isset($this->validation[$action])) {
+            return resolve($this->validation[$action]);
+        }
+
+        return resolve($this->validation);
     }
 
     /**
-     * Get label of the resource.
+     * Make the given model instance searchable.
      *
      * @return void
      */
-    protected function getLabel()
+    protected function searchable($entity)
     {
-        return trans($this->label);
+        if ($this->isSearchable($entity)) {
+            $entity->searchable();
+        }
     }
 
     /**
@@ -243,65 +204,185 @@ trait HasCrudActions
     }
 
     /**
-     * Get a new instance of the model.
-     *
-     * @return \Modules\Support\Eloquent\Model
-     */
-    protected function getModel()
-    {
-        return new $this->model;
-    }
-
-    /**
-     * Get request object
-     *
-     * @param string $action
-     * @return \Illuminate\Http\Request
-     */
-    protected function getRequest($action)
-    {
-        if (! isset($this->validation)) {
-            return request();
-        }
-
-        if (isset($this->validation[$action])) {
-            return resolve($this->validation[$action]);
-        }
-
-        return resolve($this->validation);
-    }
-
-    /**
-     * Disable search syncing for the entity.
+     * Get label of the resource.
      *
      * @return void
      */
-    protected function disableSearchSyncing()
+    protected function getLabel()
     {
-        if ($this->isSearchable()) {
-            $this->getModel()->disableSearchSyncing();
-        }
+        return trans($this->label);
     }
 
     /**
-     * Determine if the entity is searchable.
+     * Display the specified resource.
      *
-     * @return bool
+     * @param int $id
+     * @return \Illuminate\Http\Response
      */
-    protected function isSearchable()
+    public function show($id)
     {
-        return in_array(Searchable::class, class_uses_recursive($this->getModel()));
+        $entity = $this->getEntity($id);
+
+        if (request()->wantsJson()) {
+            return $entity;
+        }
+
+        return view("{$this->viewPath}.show")->with($this->getResourceName(), $entity);
     }
 
     /**
-     * Make the given model instance searchable.
+     * Get an entity by the given id.
      *
+     * @param int $id
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function getEntity($id)
+    {
+        return $this->getModel()
+                    ->with($this->relations())
+                    ->withoutGlobalScope('active')
+                    ->findOrFail($id);
+    }
+
+    /**
+     * Get the relations that should be eager loaded.
+     *
+     * @return array
+     */
+    private function relations()
+    {
+        return collect($this->with ?? [])
+            ->mapWithKeys(function ($relation) {
+                return [
+                    $relation => function ($query) {
+                        return $query->withoutGlobalScope('active');
+                    }
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $data = array_merge([
+                                'tabs' => TabManager::get($this->getModel()
+                                                               ->getTable()),
+                                $this->getResourceName() => $this->getEntity($id),
+                            ], $this->getFormData('edit', $id));
+
+        return view("{$this->viewPath}.edit", $data);
+    }
+
+    /**
+     * Destroy resources by given ids.
+     *
+     * @param string $ids
      * @return void
      */
-    protected function searchable($entity)
+    public function destroy($ids)
     {
-        if ($this->isSearchable($entity)) {
-            $entity->searchable();
+        $this->getModel()
+             ->withoutGlobalScope('active')
+             ->whereIn('id', explode(',', $ids))
+             ->delete();
+    }
+
+    private function insertOptionValueImage($entityAfterSaved, $data)
+    {
+        foreach ($entityAfterSaved->options as $option) {
+            foreach ($option->values as $value) {
+                if (isset($value->image)){
+                    $optionIndex = array_search($option->id, array_column($data['options'], 'id'));
+                    if ($optionIndex !== false && isset($data['options'][$optionIndex]['values'])) {
+                        $valueIndex = array_search($value->id,
+                                                   array_column($data['options'][$optionIndex]['values'], 'id'));
+
+                        if ($valueIndex !== false && isset($data['options'][$optionIndex]['values'][$valueIndex]['image'])) {
+
+                            $image = $data['options'][$optionIndex]['values'][$valueIndex]['image'];
+
+                            $path = Storage::putFile('media', $image);
+
+                            $file = File::create([
+                                                     'user_id' => auth()->id(),
+                                                     'disk' => config('filesystems.default'),
+                                                     'filename' => $image->getClientOriginalName(),
+                                                     'path' => $path,
+                                                     'extension' => $image->guessClientExtension() ?? '',
+                                                     'mime' => $image->getClientMimeType(),
+                                                     'size' => $image->getSize(),
+                                                 ]);
+
+                            $value->update([
+                                               'image' => $file->path
+                                           ]);
+
+                            $valueData = $value->fresh();
+
+                            EntityFiles::query()
+                                       ->updateOrCreate([
+                                                            'entity_id' => $valueData->id,
+                                                            'entity_type' => 'FleetCart\OptionValue',
+                                                            'file_id' => $file->id,
+                                                            'zone' => 'base_image'
+                                                        ]);
+                        }
+                    }
+                }
+
+            }
         }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update($id)
+    {
+        $entity = $this->getEntity($id);
+
+
+        $this->disableSearchSyncing();
+
+        $entity->update(
+            $this->getRequest('update')
+                 ->all()
+        );
+
+
+        if ($entity instanceof Product) {
+            $data = $this->getRequest('update')
+                         ->all();
+
+            $entityAfterSaved = $this->getEntity($id);
+
+            $this->insertOptionValueImage($entityAfterSaved, $data);
+
+
+        }
+
+
+        $this->searchable($entity);
+
+        RedisHelper::redisClear();
+
+        if (method_exists($this, 'redirectTo')) {
+            return $this->redirectTo($entity)
+                        ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
+        }
+
+
+        return redirect()
+            ->route("{$this->getRoutePrefix()}.index")
+            ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
     }
 }

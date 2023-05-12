@@ -1,7 +1,7 @@
 <script type="text/html" id="option-select-template">
     <div class="option-select <% if (optionId === undefined) { %> m-b-15 <% } %>">
         <div class="table-responsive">
-            <table class="options table table-bordered table-striped">
+            <table class="options table table-bordered table-responsive">
                 <thead>
                     <tr>
                         <th></th>
@@ -9,6 +9,7 @@
                         <th>{{ trans('option::attributes.price') }}</th>
                         <th>{{ trans('option::attributes.price_type') }}</th>
                         <th>Stok</th>
+                        <th>Resim</th>
                         <th></th>
                     </tr>
                 </thead>

@@ -114,6 +114,15 @@ class ProductController extends Controller
                                          ->where('product_id', $product->id)
                                          ->paginate(12);
 
+        if ($relatedProducts->count() == 0) {
+            $relatedProducts = RelatedProduct::query()
+                                             ->with([
+                                                        'product',
+                                                        'product.brand'
+                                                    ])
+                                             ->paginate(12);
+        }
+
 
         return response()->json(new RelatedProductResourceCollection($relatedProducts));
 

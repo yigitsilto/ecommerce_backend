@@ -37,3 +37,10 @@ Route::delete('products/{ids}', [
     'uses' => 'ProductController@destroy',
     'middleware' => 'can:admin.products.destroy',
 ]);
+
+Route::get('filters', [
+    'as' => 'admin.filters.index',
+    'uses' => 'FilterController@index',
+    'middleware' => 'can:admin.products.edit',
+]);
+

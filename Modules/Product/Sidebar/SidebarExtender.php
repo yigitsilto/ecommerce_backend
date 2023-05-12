@@ -33,6 +33,14 @@ class SidebarExtender extends BaseSidebarExtender
                         $this->auth->hasAccess('admin.products.index')
                     );
                 });
+
+                $item->item("Filtreler", function (Item $item) {
+                    $item->weight(5);
+                    $item->route('admin.filters.index');
+                    $item->authorize(
+                        $this->auth->hasAccess('admin.products.index')
+                    );
+                });
             });
         });
     }

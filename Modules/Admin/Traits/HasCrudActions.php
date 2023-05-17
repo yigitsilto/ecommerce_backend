@@ -73,6 +73,12 @@ trait HasCrudActions
 
         RedisHelper::redisClear();
 
+        if ($entity instanceof Product) {
+            $this->createFilterValues($this->getRequest('store')
+                                           ->all()['filter_values'], $entity);
+
+        }
+
 
         if (method_exists($this, 'redirectTo')) {
             return $this->redirectTo($entity);
@@ -192,6 +198,34 @@ trait HasCrudActions
     }
 
     /**
+     * @param $arrayValues
+     * @param $entityAfterSaved
+     * @return void
+     * Filtre değerlerine göre kayıt oluşturur.
+     */
+    private function createFilterValues($arrayValues, $entityAfterSaved)
+    {
+
+        foreach ($arrayValues as $value) {
+            $filterValue = FilterValue::query()
+                                      ->where('id', $value)
+                                      ->first();
+
+            ProductFilterValue::query()
+                              ->firstOrCreate([
+                                                  'filter_id' => $filterValue->filter_id,
+                                                  'filter_value_id' => $filterValue->id,
+                                                  'product_id' => $entityAfterSaved->id
+                                              ],
+                                              [
+                                                  'filter_id' => $filterValue->filter_id,
+                                                  'filter_value_id' => $filterValue->id,
+                                                  'product_id' => $entityAfterSaved->id
+                                              ]);
+        }
+    }
+
+    /**
      * Get route prefix of the resource.
      *
      * @return string
@@ -295,6 +329,12 @@ trait HasCrudActions
              ->delete();
     }
 
+    /**
+     * @param $entityAfterSaved
+     * @param $data
+     * @return void
+     * varyasyonların resimlerini günceller
+     */
     private function insertOptionValueImage($entityAfterSaved, $data)
     {
         foreach ($entityAfterSaved->options as $option) {
@@ -368,21 +408,7 @@ trait HasCrudActions
             $entityAfterSaved = $this->getEntity($id);
 
             $this->insertOptionValueImage($entityAfterSaved, $data);
-
-            foreach ($this->getRequest('update')
-                          ->all()['filter_values'] as $value) {
-                $filterValue = FilterValue::query()
-                                          ->where('id', $value)
-                                          ->first();
-
-                ProductFilterValue::query()
-                                  ->create([
-                                               'filter_id' => $filterValue->filter_id,
-                                               'filter_value_id' => $filterValue->id,
-                                               'product_id' => $entityAfterSaved->id
-                                           ]);
-            }
-
+            $this->createFilterValues($data['filter_values'], $entityAfterSaved);
 
         }
 

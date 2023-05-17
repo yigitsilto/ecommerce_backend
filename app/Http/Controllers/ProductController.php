@@ -187,7 +187,8 @@ class ProductController extends Controller
         $products = Product::query()
                            ->with([
                                       'brand',
-                                      'categories'
+                                      'categories',
+                                      'filterValues'
                                   ])
                            ->whereHas('categories', function ($query) use ($slug) {
                                $query->where('slug', $slug);
@@ -206,9 +207,11 @@ class ProductController extends Controller
         }
 
 
-        if ($request->has('filter')) {
+        if ($request->has('filter') && !is_null($request->validated()['filter'])) {
             $filters = explode(',', $request->validated()['filter']);
-            // TODO migration yaz producta filter value bağla ve burda filtrele
+            $products = $products->whereHas('filterValues.filterValue', function ($query) use ($filters) {
+                $query->whereIn('slug', $filters);
+            });
 
 
         }

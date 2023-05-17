@@ -181,7 +181,7 @@ class ProductController extends Controller
         return CategoryResource::collection($query);
     }
 
-    public function getProductsByCategorySlug($slug, CategoryProductListRequest $request)
+    public function getProductsByFilter(CategoryProductListRequest $request)
     {
 
         $products = Product::query()
@@ -189,11 +189,22 @@ class ProductController extends Controller
                                       'brand',
                                       'categories',
                                       'filterValues'
-                                  ])
-                           ->whereHas('categories', function ($query) use ($slug) {
-                               $query->where('slug', $slug);
-                           });
+                                  ]);
 
+
+        $slug = $request->has('brand') ? $request->validated()['brand'] : $request->validated()['category'];
+
+        if ($request->has('brand')) {
+            $products = $products->whereHas('brand', function ($query) use ($slug) {
+                $query->where('slug', $slug);
+            });
+        }
+
+        if ($request->has('category')) {
+            $products = $products->whereHas('categories', function ($query) use ($slug) {
+                $query->where('slug', $slug);
+            });
+        }
         if ($request->has('order')) {
             if (($request->validated()['order']) == 'orderByPrice') {
                 $products = $products->orderBy('price', 'asc');
@@ -224,83 +235,5 @@ class ProductController extends Controller
                                 ]);
 
     }
-
-    public function getChildCategories(Category $category)
-    {
-        $categories = Category::query()
-                              ->where('parent_id', $category->id)
-                              ->get();
-
-        if ($categories->count() < 1) {
-            return Category::query()
-                           ->where('id', $category->parent_id)
-                           ->get();
-        }
-        return $categories;
-    }
-
-    public function getBrands()
-    {
-        return Brand::query()
-                    ->where('is_active', 1)
-                    ->get();
-    }
-
-    public function getProductsByBrandSlug($slug, CategoryProductListRequest $request)
-    {
-        $products = Product::query()
-                           ->with('brand')
-                           ->whereHas('brand', function ($query) use ($slug) {
-                               $query->where('slug', $slug);
-                           });
-
-        if ($request->has('order')) {
-            if (($request->validated()['order']) == 'orderByPrice') {
-                $products = $products->orderBy('price', 'asc');
-            } elseif (($request->validated()['order']) == 'orderByPriceAsc') {
-                $products = $products->orderBy('price', 'desc');
-            } elseif (($request->validated()['order']) == 'orderByName') {
-                $products = $products->orderBy('slug', 'desc');
-            } elseif (($request->validated()['order']) == 'orderByNameAsc') {
-                $products = $products->orderBy('slug', 'asc');
-            }
-        }
-
-        if ($request->has('brands') && $request->validated()['brands'] != null) {
-            $array = explode(',', $request->validated()['brands']);
-            $products->whereHas('brand', function ($q) use ($array) {
-                $q->whereIn('id', $array);
-            });
-        }
-
-        $category = Category::query()
-                            ->where('slug', $slug)
-                            ->firstOrFail();
-
-        event(new ShowingProductList($products));
-
-        return response()->json([
-                                    'products' => new ProductsByCategoryCollection($products->paginate(12)),
-                                    'categories' => Category::query()
-                                                            ->get(),
-                                    'brands' => $this->getBrands(),
-                                ]);
-
-    }
-
-    public function suggestions(Request $request)
-    {
-
-    }
-
-    private function getReviewData(Product $product)
-    {
-        if (!setting('reviews_enabled')) {
-            return;
-        }
-
-        return Review::countAndAvgRating($product);
-    }
-
 
 }

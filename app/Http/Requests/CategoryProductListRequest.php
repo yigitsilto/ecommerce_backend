@@ -25,7 +25,9 @@ class CategoryProductListRequest extends FormRequest
     {
         return [
             'order' => 'sometimes|in:orderByName,orderByNameAsc,orderByPrice,orderByPriceAsc',
-            'filter' => 'sometimes'
+            'filter' => 'sometimes',
+            'brand' => 'sometimes',
+            'category' => 'sometimes',
         ];
     }
 

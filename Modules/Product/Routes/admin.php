@@ -38,9 +38,35 @@ Route::delete('products/{ids}', [
     'middleware' => 'can:admin.products.destroy',
 ]);
 
+
 Route::get('filters', [
     'as' => 'admin.filters.index',
     'uses' => 'FilterController@index',
     'middleware' => 'can:admin.products.edit',
 ]);
 
+Route::get('filters/create', [
+    'as' => 'admin.filters.create',
+    'uses' => 'FilterController@create',
+    'middleware' => 'can:admin.products.create',
+]);
+
+Route::post('filters', [
+    'as' => 'admin.filters.store',
+    'uses' => 'FilterController@store',
+]);
+
+Route::get('filters/{id}', [
+    'as' => 'admin.filters.edit',
+    'uses' => 'FilterController@edit',
+]);
+
+Route::put('filters/{id}', [
+    'as' => 'admin.filters.update',
+    'uses' => 'FilterController@update',
+]);
+
+Route::delete('filters/{id}', [
+    'as' => 'admin.filters.delete',
+    'uses' => 'FilterController@delete',
+]);

@@ -1,6 +1,6 @@
 <?php
 
-if (! function_exists('setting')) {
+if (!function_exists('setting')) {
     /**
      * Get / set the specified setting value.
      *
@@ -12,16 +12,27 @@ if (! function_exists('setting')) {
      */
     function setting($key = null, $default = null)
     {
+        // TODO buraya bakılacak bütün veriler redise eklenmeli oradan çekilmeli yoksa tenant yapıda sıkıntı olabilir
         if (is_null($key)) {
+            $settings = \Illuminate\Support\Facades\Redis::get('general_settings');
+            $settings = unserialize($settings);
             return app('setting');
         }
 
         if (is_array($key)) {
+            $settings = \Illuminate\Support\Facades\Redis::set('general_settings', serialize($key));
             return app('setting')->set($key);
         }
 
         try {
-            return app('setting')->get($key, $default);
+            $settings = \Illuminate\Support\Facades\Redis::get('general_settings');
+            $settings = unserialize($settings);
+
+
+            if (!isset($settings[$key])) {
+                return app('setting')->get($key, $default);
+            }
+            return $settings[$key];
         } catch (PDOException $e) {
             return $default;
         }

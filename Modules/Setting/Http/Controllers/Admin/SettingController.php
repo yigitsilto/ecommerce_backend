@@ -4,9 +4,7 @@ namespace Modules\Setting\Http\Controllers\Admin;
 
 use FleetCart\Helpers\RedisHelper;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Redis;
 use Modules\Admin\Ui\Facades\TabManager;
-use Modules\Core\Http\Requests\Request;
 use Modules\Setting\Entities\ShippingCompany;
 use Modules\Setting\Http\Requests\UpdateSettingRequest;
 
@@ -33,15 +31,16 @@ class SettingController
      */
     public function update(UpdateSettingRequest $request)
     {
-        if ($request->has('company_name')){
-            ShippingCompany::query()->updateOrCreate([
-                'name' => $request->get('company_name')
-            ],[
-                'name' => $request->get('company_name'),
-                'price' => $request->get('company_price'),
-                'status' => $request->get('company_status'),
+        if ($request->has('company_name')) {
+            ShippingCompany::query()
+                           ->updateOrCreate([
+                                                'name' => $request->get('company_name')
+                                            ], [
+                                                'name' => $request->get('company_name'),
+                                                'price' => $request->get('company_price'),
+                                                'status' => $request->get('company_status'),
 
-            ]);
+                                            ]);
         }
 
 
@@ -55,7 +54,8 @@ class SettingController
             ->with('success', trans('setting::messages.settings_have_been_saved'));
     }
 
-    private function redisUpdate(){
+    private function redisUpdate()
+    {
         RedisHelper::redisClear();
     }
 
@@ -69,30 +69,37 @@ class SettingController
         }
     }
 
-    public function companiesCreate(){
+    public function companiesCreate()
+    {
         return view('setting::admin.settings.shippingTypeCreate');
 
     }
 
-    public function createCompany(\Illuminate\Http\Request $request){
-         ShippingCompany::query()->updateOrCreate([
-            'name' => $request->get('name')
-        ],[
-            'name' => $request->get('name'),
-            'price' => $request->get('price'),
-        ]);
+    public function createCompany(\Illuminate\Http\Request $request)
+    {
+        ShippingCompany::query()
+                       ->updateOrCreate([
+                                            'name' => $request->get('name')
+                                        ], [
+                                            'name' => $request->get('name'),
+                                            'price' => $request->get('price'),
+                                        ]);
         $this->redisUpdate();
-         return redirect()->route('admin.settings.companies');
+        return redirect()->route('admin.settings.companies');
     }
 
-    public function companies(){
+    public function companies()
+    {
         $company = ShippingCompany::all();
         return view('setting::admin.settings.shippingTypes')->with(compact('company'));
     }
 
-    public function deleteCompany($id){
+    public function deleteCompany($id)
+    {
         $this->redisUpdate();
-        ShippingCompany::query()->find($id)->delete();
+        ShippingCompany::query()
+                       ->find($id)
+                       ->delete();
         return redirect()->back();
 
     }

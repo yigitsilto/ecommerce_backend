@@ -17,6 +17,7 @@ services:
       dockerfile: php.dockerfile
     volumes:
         - './:/var/www/html:delegated'
+#        - - './yarn:/var/www/html/node_modules'  # Add this line for the yarn volume
   db:
     platform: linux/x86_64
     image: mysql:5.7

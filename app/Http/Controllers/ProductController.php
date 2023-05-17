@@ -116,6 +116,8 @@ class ProductController extends Controller
 
         if ($relatedProducts->count() == 0) {
             $relatedProducts = RelatedProduct::query()
+                                             ->inRandomOrder()
+                                             ->distinct('product_id')
                                              ->with([
                                                         'product',
                                                         'product.brand'
@@ -279,7 +281,8 @@ class ProductController extends Controller
 
         return response()->json([
                                     'products' => new ProductsByCategoryCollection($products->paginate(12)),
-                                    'categories' => Category::query()->get(),
+                                    'categories' => Category::query()
+                                                            ->get(),
                                     'brands' => $this->getBrands(),
                                 ]);
 

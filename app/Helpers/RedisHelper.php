@@ -15,6 +15,7 @@ class RedisHelper
         Redis::del('popularCategories');
         Redis::del('brands');
         Redis::del('settings');
+        Redis::del('general_settings');
     }
 
 }

@@ -2,7 +2,9 @@
 
 namespace Modules\Admin\Traits;
 
+use FleetCart\FilterValue;
 use FleetCart\Helpers\RedisHelper;
+use FleetCart\ProductFilterValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Modules\Admin\Ui\Facades\TabManager;
@@ -297,7 +299,7 @@ trait HasCrudActions
     {
         foreach ($entityAfterSaved->options as $option) {
             foreach ($option->values as $value) {
-                if (isset($value->image)){
+                if (isset($value->image)) {
                     $optionIndex = array_search($option->id, array_column($data['options'], 'id'));
                     if ($optionIndex !== false && isset($data['options'][$optionIndex]['values'])) {
                         $valueIndex = array_search($value->id,
@@ -366,6 +368,20 @@ trait HasCrudActions
             $entityAfterSaved = $this->getEntity($id);
 
             $this->insertOptionValueImage($entityAfterSaved, $data);
+
+            foreach ($this->getRequest('update')
+                          ->all()['filter_values'] as $value) {
+                $filterValue = FilterValue::query()
+                                          ->where('id', $value)
+                                          ->first();
+
+                ProductFilterValue::query()
+                                  ->create([
+                                               'filter_id' => $filterValue->filter_id,
+                                               'filter_value_id' => $filterValue->id,
+                                               'product_id' => $entityAfterSaved->id
+                                           ]);
+            }
 
 
         }

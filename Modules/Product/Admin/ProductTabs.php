@@ -2,6 +2,7 @@
 
 namespace Modules\Product\Admin;
 
+use FleetCart\FilterValue;
 use Modules\Admin\Ui\Tab;
 use Modules\Admin\Ui\Tabs;
 use Modules\Brand\Entities\Brand;
@@ -33,6 +34,16 @@ class ProductTabs extends Tabs
     private function general()
     {
         return tap(new Tab('general', trans('product::products.tabs.general')), function (Tab $tab) {
+
+            $filterValues = FilterValue::query()
+                                       ->with('filter')
+                                       ->get()
+                                       ->map(function ($filterValue) {
+                                           $filterValue->name = $filterValue->filter->title . "-". $filterValue->title;
+                                           return $filterValue;
+                                       })->pluck('name', 'id');
+
+
             $tab->active();
             $tab->weight(5);
             $tab->fields([
@@ -47,6 +58,7 @@ class ProductTabs extends Tabs
                 'categories' => Category::treeList(),
                 'taxClasses' => $this->taxClasses(),
                 'tags' => Tag::list(),
+                'filterValues' => $filterValues
             ]);
         });
     }
@@ -113,7 +125,9 @@ class ProductTabs extends Tabs
             $tab->weight(40);
             $tab->view('product::admin.products.tabs.related', [
                 'name' => 'related_products',
-                'relatedProducts' => Product::query()->get()->pluck( 'name', 'id')
+                'relatedProducts' => Product::query()
+                                            ->get()
+                                            ->pluck('name', 'id')
             ]);
         });
     }

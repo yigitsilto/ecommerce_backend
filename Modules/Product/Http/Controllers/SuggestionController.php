@@ -78,7 +78,7 @@ class SuggestionController
                 'products.manage_stock',
                 'products.qty',
             ])
-            ->with(['files', 'categories' => function ($query) {
+            ->with(['files','brand', 'categories' => function ($query) {
                 $query->limit(5);
             }])
             ->when(request()->filled('category'), $this->categoryQuery())

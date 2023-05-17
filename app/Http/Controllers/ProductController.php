@@ -183,6 +183,7 @@ class ProductController extends Controller
 
     public function getProductsByCategorySlug($slug, CategoryProductListRequest $request)
     {
+
         $products = Product::query()
                            ->with([
                                       'brand',
@@ -204,23 +205,19 @@ class ProductController extends Controller
             }
         }
 
-        if ($request->has('brands') && $request->validated()['brands'] != null) {
-            $array = explode(',', $request->validated()['brands']);
-            $products->whereHas('brand', function ($q) use ($array) {
-                $q->whereIn('id', $array);
-            });
+
+        if ($request->has('filter')) {
+            $filters = explode(',', $request->validated()['filter']);
+            // TODO migration yaz producta filter value bağla ve burda filtrele
+
+
         }
 
-        $category = Category::query()
-                            ->where('slug', $slug)
-                            ->firstOrFail();
 
         event(new ShowingProductList($products));
 
         return response()->json([
                                     'products' => new ProductsByCategoryCollection($products->paginate(12)),
-                                    'categories' => $this->getChildCategories($category),
-                                    'brands' => $this->getBrands(),
                                 ]);
 
     }

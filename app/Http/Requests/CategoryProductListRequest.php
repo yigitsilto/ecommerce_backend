@@ -25,17 +25,9 @@ class CategoryProductListRequest extends FormRequest
     {
         return [
             'order' => 'sometimes|in:orderByName,orderByNameAsc,orderByPrice,orderByPriceAsc',
-            'brands' => 'sometimes'
+            'filter' => 'sometimes'
         ];
     }
 
-    protected function passedValidation(){
-        if ($this->has('brands')) {
-            $this->merge([
-                'brands' => $this->brands ? explode(',', $this->brands) : []
-            ]);
-        }
-
-    }
 
 }

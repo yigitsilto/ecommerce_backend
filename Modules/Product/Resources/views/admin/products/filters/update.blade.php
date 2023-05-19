@@ -31,33 +31,48 @@
                                 <!-- Multiple text value input triggered by plus button -->
 
                                 <div id="valuesContainer">
-                                   @foreach($filter->values as $key => $value)
+                                    <label for="">Filtre Değerleri *</label>
+                                    @foreach($filter->values as $key => $value)
 
                                         <div style="display: flex; flex:1; align-items: center; ">
-                                            <div class="col-12" style="width: 100%">
-                                                <label for="">Filtre Değerleri *</label>
-                                                <input class="form-control" type="text" required name="values[{{$key}}][title]" placeholder="Yazınız..."
+                                            <div class="col-12" style="width: 100%; margin-top: 24px">
+                                                <input class="form-control mt-4" type="text" required
+                                                       name="values[{{$key}}][title]" placeholder="Yazınız..."
                                                        value="{{$value->title}}">
 
-                                                <input class="form-control" type="hidden" required name="values[{{$key}}][id]" placeholder="Yazınız..."
+                                                <input class="form-control" type="hidden" required
+                                                       name="values[{{$key}}][id]" placeholder="Yazınız..."
                                                        value="{{$value->id}}">
                                             </div>
 
-                                           @if($key == 0)
+                                            @if($key == 0)
                                                 <div>
-                                                    <button type="button" class="btn btn-primary" style="margin-top: 24px"
+                                                    <button type="button" class="btn btn-primary"
+                                                            style="margin-top: 24px"
                                                             onclick="addNewValue()">
                                                         +
                                                     </button>
                                                 </div>
-                                           @endif
+{{--                                            @else--}}
+{{--                                                <div>--}}
+{{--                                                    <form id="form-delete" action="{{route('admin.filters.value.delete',$value->id)}}" method="POST">--}}
+{{--                                                        {{ csrf_field() }}--}}
+{{--                                                        {{ method_field('DELETE')}}--}}
 
+{{--                                                        <button type="button" class="btn btn-danger"--}}
+{{--                                                                style="margin-top: 24px"--}}
+{{--                                                                onclick="deleteInput()">--}}
+{{--                                                            ---}}
+{{--                                                        </button>--}}
+{{--                                                    </form>--}}
+{{--                                                </div>--}}
+
+                                            @endif
 
 
                                         </div>
 
-
-                                   @endforeach
+                                    @endforeach
                                 </div>
 
                                 <button type="submit" class="btn btn-primary mt-4" style="margin-top: 12px"
@@ -77,6 +92,14 @@
     </div>
 
     <script>
+
+        // function deleteInput() {
+        //     confirm("Silmek istediğinize emin misiniz?");
+        //     let form = document.getElementById("form-delete");
+        //     console.log()
+        //     form.submit();
+        // }
+        //
         function addNewValue() {
             var container = document.createElement("div");
             container.style.display = "flex";
@@ -96,9 +119,21 @@
             input.value = "";
             input.placeholder = "Yazınız...";
             inputDiv.appendChild(input);
-
-
             container.appendChild(inputDiv);
+
+            var deleteDiv = document.createElement("div");
+
+
+            var deleteButton = document.createElement("button");
+            deleteButton.textContent = "-";
+            deleteButton.className = "btn btn-danger";
+            deleteButton.style.marginTop = "24px";
+            deleteButton.addEventListener("click", function () {
+                container.remove();
+            });
+
+            container.appendChild(deleteDiv);
+            deleteDiv.appendChild(deleteButton);
 
             var valuesContainer = document.getElementById("valuesContainer");
             valuesContainer.appendChild(container);

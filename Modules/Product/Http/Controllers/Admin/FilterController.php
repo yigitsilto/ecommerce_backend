@@ -135,4 +135,12 @@ class FilterController
 
 
     }
+
+    public function deleteValue($id){
+dd(2);
+        $value = FilterValue::query()
+                            ->findOrFail($id);
+        $value->delete();
+        return redirect()->back();
+    }
 }

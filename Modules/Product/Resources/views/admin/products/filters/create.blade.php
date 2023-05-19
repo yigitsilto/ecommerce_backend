@@ -81,9 +81,24 @@
             input.value = "";
             input.placeholder = "Yazınız...";
             inputDiv.appendChild(input);
-
-
             container.appendChild(inputDiv);
+
+
+            var deleteDiv = document.createElement("div");
+
+
+            var deleteButton = document.createElement("button");
+            deleteButton.textContent = "-";
+            deleteButton.className =  "btn btn-danger";
+            deleteButton.style.marginTop = "24px";
+            deleteButton.addEventListener("click", function() {
+                container.remove();
+            });
+
+            container.appendChild(deleteDiv);
+            deleteDiv.appendChild(deleteButton);
+
+
 
             var valuesContainer = document.getElementById("valuesContainer");
             valuesContainer.appendChild(container);

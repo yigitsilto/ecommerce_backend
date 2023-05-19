@@ -70,3 +70,9 @@ Route::delete('filters/{id}', [
     'as' => 'admin.filters.delete',
     'uses' => 'FilterController@delete',
 ]);
+
+
+Route::delete('filters/value/{id}', [
+    'as' => 'admin.filters.value.delete',
+    'uses' => 'FilterController@deleteValue',
+]);

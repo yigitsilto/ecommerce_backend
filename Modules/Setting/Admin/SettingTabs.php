@@ -22,10 +22,10 @@ class SettingTabs extends Tabs
     {
         $this->group('general_settings', trans('setting::settings.tabs.group.general_settings'))
             ->active()
-            ->add($this->general())
+//             ->add($this->general())
             //->add($this->maintenance())
             ->add($this->store())
-            ->add($this->currency())
+//            ->add($this->currency())
             ->add($this->sms())
             ->add($this->mail());
             //->add($this->newsletter())
@@ -63,7 +63,7 @@ class SettingTabs extends Tabs
             $tab->weight(5);
 
             $tab->fields([
-                'supported_countries.*',
+//                'supported_countries.*',
                 'default_country',
                 'supported_locales.*',
                 'default_locale',
@@ -92,6 +92,7 @@ class SettingTabs extends Tabs
     private function store()
     {
         return tap(new Tab('store', trans('setting::settings.tabs.store')), function (Tab $tab) {
+            $tab->active();
             $tab->weight(10);
 
             $tab->fields([

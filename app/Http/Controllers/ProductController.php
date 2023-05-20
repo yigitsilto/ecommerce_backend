@@ -9,16 +9,13 @@ use FleetCart\Http\Resources\HomePageProductsResource;
 use FleetCart\Http\Resources\ProductsByCategoryCollection;
 use FleetCart\Http\Resources\RelatedProductResourceCollection;
 use FleetCart\RelatedProduct;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
-use Modules\Brand\Entities\Brand;
 use Modules\Category\Entities\Category;
 use Modules\Product\Entities\Product;
 use Modules\Product\Events\ProductViewed;
 use Modules\Product\Events\ShowingProductList;
 use Modules\Product\Http\Controllers\ProductSearch;
 use Modules\Product\Http\Middleware\SetProductSortOption;
-use Modules\Review\Entities\Review;
 use Modules\Slider\Entities\Slider;
 
 class ProductController extends Controller
@@ -114,10 +111,11 @@ class ProductController extends Controller
                                          ->where('product_id', $product->id)
                                          ->paginate(12);
 
+
         if ($relatedProducts->count() == 0) {
             $relatedProducts = RelatedProduct::query()
-                                             ->inRandomOrder()
                                              ->distinct('product_id')
+                                             ->inRandomOrder()
                                              ->with([
                                                         'product',
                                                         'product.brand'

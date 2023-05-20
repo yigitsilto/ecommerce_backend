@@ -37,25 +37,25 @@ class UpdateSettingRequest extends Request
     public function rules()
     {
         return [
-            'supported_countries.*' => ['required', Rule::in(Country::codes())],
-            'default_country' => 'required|in_array:supported_countries.*',
-            'supported_locales.*' => ['required', Rule::in(Locale::codes())],
-            'default_locale' => 'required|in_array:supported_locales.*',
-            'default_timezone' => ['required', Rule::in(TimeZone::all())],
-            'customer_role' => ['required', Rule::exists('roles', 'id')],
-            'supported_currencies.*' => ['required', Rule::in(Currency::codes())],
-            'default_currency' => 'required|in_array:supported_currencies.*',
+//            'supported_countries.*' => ['required', Rule::in(Country::codes())],
+//            'default_country' => 'required|in_array:supported_countries.*',
+//            'supported_locales.*' => ['required', Rule::in(Locale::codes())],
+//            'default_locale' => 'required|in_array:supported_locales.*',
+//            'default_timezone' => ['required', Rule::in(TimeZone::all())],
+//            'customer_role' => ['required', Rule::exists('roles', 'id')],
+//            'supported_currencies.*' => ['required', Rule::in(Currency::codes())],
+//            'default_currency' => 'required|in_array:supported_currencies.*',
 
             'translatable.store_name' => 'required',
             'store_phone' => ['required'],
             'store_email' => 'required|email',
             'store_country' => ['required', Rule::in(Country::codes())],
 
-            'fixer_access_key' => 'required_if:currency_rate_exchange_service,fixer',
-            'forge_api_key' => 'required_if:currency_rate_exchange_service,forge',
-            'currency_data_feed_api_key' => 'required_if:currency_rate_exchange_service,currency_data_feed',
-            'auto_refresh_currency_rates' => 'required|boolean',
-            'auto_refresh_currency_rate_frequency' => ['required_if:auto_refresh_currency_rates,1', Rule::in($this->refreshFrequencies())],
+//            'fixer_access_key' => 'required_if:currency_rate_exchange_service,fixer',
+//            'forge_api_key' => 'required_if:currency_rate_exchange_service,forge',
+//            'currency_data_feed_api_key' => 'required_if:currency_rate_exchange_service,currency_data_feed',
+//            'auto_refresh_currency_rates' => 'required|boolean',
+//            'auto_refresh_currency_rate_frequency' => ['required_if:auto_refresh_currency_rates,1', Rule::in($this->refreshFrequencies())],
 
             'sms_service' => ['nullable', Rule::in($this->smsServices())],
             'vonage_key' => ['required_if:sms_service,vonage'],

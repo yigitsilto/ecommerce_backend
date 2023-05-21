@@ -53,6 +53,10 @@ class SettingsController extends Controller
                     'logo' => $this->getHeaderLogo(),
                     'copyrightText' => $this->getCopyrightText(),
                     'welcomeText' => $this->getWelcomeText(),
+                    'popular_products_text' => setting('popular_products_text'),
+                    'popular_categories_text' => setting('popular_categories_text'),
+                    'related_products_text' => setting('related_products_text'),
+                    'blog_text' => setting('blog_text'),
                     'address' => setting('storefront_address'),
                     'facebook' => setting('storefront_facebook_link'),
                     'twitter' => setting('storefront_twitter_link'),
@@ -67,8 +71,8 @@ class SettingsController extends Controller
                 ],
             ];
             Redis::set('settings', json_encode($settings));
-        }
 
+        }
 
         return $settings;
 

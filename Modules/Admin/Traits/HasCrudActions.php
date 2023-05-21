@@ -74,8 +74,12 @@ trait HasCrudActions
         RedisHelper::redisClear();
 
         if ($entity instanceof Product) {
-            $this->createFilterValues($this->getRequest('store')
-                                           ->all()['filter_values'], $entity);
+            if (isset($this->getRequest('store')
+                           ->all()['filter_values'])) {
+                $this->createFilterValues($this->getRequest('store')
+                                               ->all()['filter_values'], $entity);
+            }
+
 
         }
 
@@ -408,7 +412,10 @@ trait HasCrudActions
             $entityAfterSaved = $this->getEntity($id);
 
             $this->insertOptionValueImage($entityAfterSaved, $data);
-            $this->createFilterValues($data['filter_values'], $entityAfterSaved);
+            if (isset($data['filter_values'])) {
+                $this->createFilterValues($data['filter_values'], $entityAfterSaved);
+
+            }
 
         }
 

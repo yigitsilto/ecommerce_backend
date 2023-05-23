@@ -27,6 +27,14 @@ class SidebarExtender extends BaseSidebarExtender
                         $this->auth->hasAccess('admin.orders.index')
                     );
                 });
+
+                $item->item('İade Talepleri', function (Item $item) {
+                    $item->weight(5);
+                    $item->route('admin.refunds.index');
+                    $item->authorize(
+                        $this->auth->hasAccess('admin.orders.index')
+                    );
+                });
             });
         });
     }

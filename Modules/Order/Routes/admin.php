@@ -31,3 +31,24 @@ Route::get('orders/{order}/print', [
     'uses' => 'OrderPrintController@show',
     'middleware' => 'can:admin.orders.show',
 ]);
+
+
+
+
+Route::get('refunds', [
+    'as' => 'admin.refunds.index',
+    'uses' => 'OrderController@refunds',
+    'middleware' => 'can:admin.orders.index',
+]);
+
+Route::get('refunds/{id}', [
+    'as' => 'admin.refunds.show',
+    'uses' => 'OrderController@refundsShow',
+    'middleware' => 'can:admin.orders.show',
+]);
+
+Route::put('refunds/{id}/status', [
+    'as' => 'admin.refunds.status.update',
+    'uses' => 'OrderController@refundsUpdate',
+    'middleware' => 'can:admin.orders.edit',
+]);

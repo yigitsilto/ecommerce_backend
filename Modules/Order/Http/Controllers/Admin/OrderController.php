@@ -2,8 +2,10 @@
 
 namespace Modules\Order\Http\Controllers\Admin;
 
-use Modules\Order\Entities\Order;
+use FleetCart\Refund;
+use Illuminate\Http\Request;
 use Modules\Admin\Traits\HasCrudActions;
+use Modules\Order\Entities\Order;
 
 class OrderController
 {
@@ -21,7 +23,11 @@ class OrderController
      *
      * @var array
      */
-    protected $with = ['products', 'coupon', 'taxes'];
+    protected $with = [
+        'products',
+        'coupon',
+        'taxes'
+    ];
 
     /**
      * Label of the resource.
@@ -36,4 +42,49 @@ class OrderController
      * @var string
      */
     protected $viewPath = 'order::admin.orders';
+
+
+    public function refunds()
+    {
+        $refunds = Refund::query()
+                         ->with([
+                                    'order',
+                                    'user'
+                                ])
+                         ->orderBy('id', 'desc')
+                         ->paginate();
+        return view('order::admin.refunds.index', compact('refunds'));
+    }
+
+    public function refundsShow($id)
+    {
+        $refund = Refund::query()
+                        ->with([
+                                   'product',
+                                   'user'
+                               ])
+                        ->findOrFail($id);
+        return view('order::admin.refunds.show', compact('refund'));
+    }
+
+    public function refundsUpdate($id,Request $request)
+    {
+
+        // update the status for refudn model
+
+        $refund = Refund::query()
+                        ->with([
+                                   'product',
+                                   'user'
+                               ])
+                        ->findOrFail($id);
+
+        $refund->status = $request->status;
+        $refund->save();
+
+        // return back to the refunds page
+        return redirect()->route('admin.refunds.index');
+
+    }
+
 }

@@ -10,12 +10,12 @@ class RefundServiceImpl implements RefundService
     public function index()
     {
         return Refund::query()
+            ->with(['product', 'order'])
                      ->where('user_id', auth('api')
                          ->user()
                          ->getAuthIdentifier())
                      ->orderBy("created_at", "desc")
-                     ->limit(20)
-                     ->get();
+                     ->paginate(20);
     }
 
     public function store(StoreRefundRequest $request)

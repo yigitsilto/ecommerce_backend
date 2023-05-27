@@ -43,6 +43,7 @@ class ProductResource extends JsonResource
             'normalPrice' => $this->normalPrice,
             'created_at' => $this->created_at,
             'name' => $this->name,
+            'short_description' => $this->short_desc,
             'options' => $this->whenLoaded('options', function () {
                 return $this->options;
             }),

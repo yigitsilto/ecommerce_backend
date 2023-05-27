@@ -42,6 +42,7 @@ class HomePageProductsResource extends JsonResource
             'special_price_percent' => $this->special_price_percent,
             'normalPrice' => $this->normalPrice,
             'name' => $this->name,
+            'short_description' => $this->short_desc,
         ];
     }
 }

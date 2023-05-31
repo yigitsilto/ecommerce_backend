@@ -38,7 +38,7 @@ class BasketServiceImpl implements BasketService
     public function index()
     {
         $basket = Basket::query()
-                        ->with('product')
+                        ->with(['product','product.options'])
                         ->whereHas('product')
                         ->where('user_id', auth('api')->id())
                         ->get();
@@ -118,8 +118,28 @@ class BasketServiceImpl implements BasketService
                         ->where('product_id', $request->product_id)
                         ->first();
 
+        $isOptionSame = true;
 
-        if ($basket) {
+
+        if (!is_null($basket) && isset($basket->options)){
+            $options = json_decode($basket->options);
+            // options and request options is same ?
+            foreach ($options as $option) {
+
+                foreach ($request->options as $requestOption){
+
+
+                    if (($option->valueId != $requestOption['valueId']) || ($option->optionId != $requestOption['optionId'])){
+                        $isOptionSame = false;
+                    }
+                }
+            }
+        }
+
+
+
+
+        if ($basket && $isOptionSame) {
 
             $basket->quantity++;
             $basket->save();

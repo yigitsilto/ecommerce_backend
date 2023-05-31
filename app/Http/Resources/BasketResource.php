@@ -19,14 +19,14 @@ class BasketResource extends JsonResource
             'product_id' =>$this->product_id,
             'user_id' =>$this->user_id,
             'quantity' =>$this->quantity,
-            'options' =>$this->options,
+            'options' =>$this->options ? json_decode($this->options) : null,
             'created_at' =>$this->created_at,
             'updated_at' =>$this->updated_at,
             'price' =>$this->price,
             'total' =>$this->total,
             'totalPriceNotFormatted' =>$this->totalPriceNotFormatted,
             'product' => $this->whenLoaded('product', function () {
-                return new HomePageProductsResource($this->product);
+                return new ProductResource($this->product);
             })
         ];
     }

@@ -205,7 +205,28 @@ class BasketServiceImpl implements BasketService
                             ->where('product_id', $item['product_id'])
                             ->first();
 
-            if ($basket) {
+
+            $isOptionSame = true;
+
+
+            if (!is_null($basket) && isset($basket->options)){
+                $options = json_decode($basket->options);
+                // options and request options is same ?
+                foreach ($options as $option) {
+
+
+                    foreach ($item['options'] as $requestOption){
+
+                        if (($option->valueId == $requestOption['valueId']) && ($option->optionId == $requestOption['optionId'])){
+                            $isOptionSame = true;
+                        }else{
+                            $isOptionSame = false;
+                        }
+                    }
+                }
+            }
+
+            if ($basket && $isOptionSame) {
 
                 $basket->quantity++;
                 $basket->save();

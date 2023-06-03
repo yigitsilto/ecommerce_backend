@@ -21,6 +21,7 @@ use Modules\Support\Money;
 use Modules\Support\Search\Searchable;
 use Modules\Tag\Entities\Tag;
 use Modules\Tax\Entities\TaxClass;
+use Modules\User\Entities\Company;
 use Modules\User\Entities\CompanyPrice;
 
 class Product extends Model
@@ -411,10 +412,13 @@ class Product extends Model
         if (auth('api')->user() != null) {
 
 
+
             if (auth('api')->user()->company_group_id != null) {
 
+                $company = Company::query()->where('id', auth('api')->user()->company_group_id)->first();
+
                 $companyPrice = CompanyPrice::query()
-                                            ->where('id', auth('api')->user()->company_group_id)
+                                            ->where('id', $company->company_price_id)
                                             ->first();
 
 

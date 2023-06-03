@@ -10,6 +10,7 @@ use Modules\Category\Entities\Category;
 use Modules\Product\Entities\Product;
 use Modules\Tag\Entities\Tag;
 use Modules\Tax\Entities\TaxClass;
+use Modules\User\Entities\CompanyPrice;
 
 class ProductTabs extends Tabs
 {
@@ -39,9 +40,10 @@ class ProductTabs extends Tabs
                                        ->with('filter')
                                        ->get()
                                        ->map(function ($filterValue) {
-                                           $filterValue->name = $filterValue->filter->title . "-". $filterValue->title;
+                                           $filterValue->name = $filterValue->filter->title . "-" . $filterValue->title;
                                            return $filterValue;
-                                       })->pluck('name', 'id');
+                                       })
+                                       ->pluck('name', 'id');
 
 
             $tab->active();
@@ -88,7 +90,10 @@ class ProductTabs extends Tabs
                              //                'special_price_end',
                          ]);
 
-            $tab->view('product::admin.products.tabs.price');
+            $tab->view('product::admin.products.tabs.price', [
+                'companyPrices' => CompanyPrice::query()
+                                               ->get()
+            ]);
         });
     }
 

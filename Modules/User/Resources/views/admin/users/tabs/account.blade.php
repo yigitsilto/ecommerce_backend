@@ -5,6 +5,7 @@
         {{ Form::email('email', trans('user::attributes.users.email'), $errors, $user, ['required' => true]) }}
         {{ Form::text('phone', trans('user::attributes.users.phone'), $errors, $user, ['required' => true]) }}
         {{ Form::select('roles', trans('user::attributes.users.roles'), $errors, $roles, $user, ['multiple' => true, 'required' => true, 'class' => 'selectize prevent-creation']) }}
+        {{ Form::select('company_group_id', 'Bayi/Üye Grup', $errors, $companies, $user, ['required' => true]) }}
 
         @if (request()->routeIs('admin.users.create'))
             {{ Form::password('password', trans('user::attributes.users.password'), $errors, null, ['required' => true]) }}

@@ -126,6 +126,12 @@ class Product extends Model
      */
     protected $slugAttribute = 'name';
 
+
+    public function productPrices()
+    {
+        return $this->hasMany(ProductPrice::class, 'product_id', 'id');
+    }
+
     public static function newArrivals($limit)
     {
         return static::forCard()

@@ -11,6 +11,8 @@ use Modules\Admin\Ui\Facades\TabManager;
 use Modules\Media\Entities\File;
 use Modules\Product\Entities\EntityFiles;
 use Modules\Product\Entities\Product;
+use Modules\Product\Entities\ProductPrice;
+use Modules\Product\Http\Requests\SaveProductRequest;
 use Modules\Support\Search\Searchable;
 
 trait HasCrudActions
@@ -58,15 +60,45 @@ trait HasCrudActions
     public function store()
     {
 
-
         $this->disableSearchSyncing();
 
 
+        $request = $this->getRequest('store');
+
+        if ($request instanceof SaveProductRequest) {
+
+
+            $request = $this->getRequest('update')
+                            ->merge([
+                                        'price' => $this->getRequest('update')
+                                                        ->all()['prices'][1]
+                                    ]);
+        }
+
         $entity = $this->getModel()
                        ->create(
-                           $this->getRequest('store')
-                                ->all()
+                          $request->all()
                        );
+
+        if ($entity instanceof Product) {
+
+            foreach ($request->all()['prices'] as $index => $price) {
+
+
+                ProductPrice::query()
+                            ->updateOrCreate(
+                                [
+                                    'product_id' => $entity->id,
+                                    'company_price_id' => $index,
+                                ],
+                                [
+                                    'product_id' => $entity->id,
+                                    'price' => $price,
+                                    'company_price_id' => $index
+                                ]);
+            }
+
+        }
 
 
         $this->searchable($entity);
@@ -74,6 +106,8 @@ trait HasCrudActions
         RedisHelper::redisClear();
 
         if ($entity instanceof Product) {
+
+
             if (isset($this->getRequest('store')
                            ->all()['filter_values'])) {
                 $this->createFilterValues($this->getRequest('store')
@@ -114,6 +148,25 @@ trait HasCrudActions
     protected function isSearchable()
     {
         return in_array(Searchable::class, class_uses_recursive($this->getModel()));
+    }
+
+    /**
+     * Get request object
+     *
+     * @param string $action
+     * @return \Illuminate\Http\Request
+     */
+    protected function getRequest($action)
+    {
+        if (!isset($this->validation)) {
+            return request();
+        }
+
+        if (isset($this->validation[$action])) {
+            return resolve($this->validation[$action]);
+        }
+
+        return resolve($this->validation);
     }
 
     /**
@@ -168,25 +221,6 @@ trait HasCrudActions
         }
 
         return [];
-    }
-
-    /**
-     * Get request object
-     *
-     * @param string $action
-     * @return \Illuminate\Http\Request
-     */
-    protected function getRequest($action)
-    {
-        if (!isset($this->validation)) {
-            return request();
-        }
-
-        if (isset($this->validation[$action])) {
-            return resolve($this->validation[$action]);
-        }
-
-        return resolve($this->validation);
     }
 
     /**
@@ -396,12 +430,41 @@ trait HasCrudActions
     {
         $entity = $this->getEntity($id);
 
+        $request = $this->getRequest('update');
+
+        if ($entity instanceof Product) {
+
+            $request = $this->getRequest('update')
+                            ->merge([
+                                        'price' => $this->getRequest('update')
+                                                        ->all()['prices'][1]
+                                    ]);
+
+
+            foreach ($request->all()['prices'] as $index => $price) {
+
+                $formattedNumber = number_format((float)$price, 4, '.', '');
+
+                ProductPrice::query()
+                            ->updateOrCreate(
+                                [
+                                    'product_id' => $id,
+                                    'company_price_id' => $index,
+                                ],
+                                [
+                                    'product_id' => $id,
+                                    'price' => $price,
+                                    'company_price_id' => $index
+                                ]);
+            }
+
+
+        }
 
         $this->disableSearchSyncing();
 
         $entity->update(
-            $this->getRequest('update')
-                 ->all()
+            $request->all()
         );
 
 

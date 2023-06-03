@@ -37,6 +37,11 @@ class SidebarExtender extends BaseSidebarExtender
                         $this->auth->hasAccess('admin.roles.index')
                     );
                 });
+                // bayi
+                $item->item('Bayi Yönetimi', function (Item $item) {
+                    $item->weight(10);
+                    $item->route('admin.company.index');
+                });
             });
         });
     }

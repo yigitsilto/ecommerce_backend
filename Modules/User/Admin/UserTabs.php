@@ -4,6 +4,7 @@ namespace Modules\User\Admin;
 
 use Modules\Admin\Ui\Tab;
 use Modules\Admin\Ui\Tabs;
+use Modules\User\Entities\Company;
 use Modules\User\Entities\Role;
 use Modules\User\Repositories\Permission;
 
@@ -31,10 +32,12 @@ class UserTabs extends Tabs
                 'phone',
                 'activated',
                 'roles',
+                'companies'
             ]);
 
             $tab->view('user::admin.users.tabs.account', [
                 'roles' => Role::list(),
+                'companies' => Company::query()->get()->pluck('title', 'id')
             ]);
         });
     }

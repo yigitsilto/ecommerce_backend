@@ -100,3 +100,34 @@ Route::put('profile', [
     'as' => 'admin.profile.update',
     'uses' => 'ProfileController@update',
 ]);
+
+
+// bayi
+
+Route::get('company', [
+    'as' => 'admin.company.index',
+    'uses' => 'CompanyController@index',
+]);
+
+
+Route::get('company/{id}', [
+    'as' => 'admin.company.edit',
+    'uses' => 'CompanyController@edit',
+]);
+
+
+Route::get('company-create', [
+    'as' => 'admin.company.create',
+    'uses' => 'CompanyController@create',
+]);
+
+Route::post('company', [
+    'as' => 'admin.company.store',
+    'uses' => 'CompanyController@store',
+]);
+
+Route::put('company/{id}', [
+    'as' => 'admin.company.update',
+    'uses' => 'CompanyController@update',
+]);
+

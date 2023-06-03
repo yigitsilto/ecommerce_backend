@@ -16,9 +16,19 @@ class CreateCompanyTable extends Migration
         Schema::create('company', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->integer('company_price_id')->unsigned();
+            $table->integer('company_price_id')
+                  ->unsigned();
             $table->timestamps();
         });
+
+        // add one seeder create to company table
+        \Illuminate\Support\Facades\DB::table('company')
+                                      ->insert(
+                                          array(
+                                              'title' => 'Kullanıcı',
+                                              'company_price_id' => '1',
+                                          )
+                                      );
     }
 
     /**

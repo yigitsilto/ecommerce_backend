@@ -14,8 +14,18 @@ class AddCompanyGroupIdColumnToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('company_group_id')->nullable();
+            $table->integer('company_group_id')
+                  ->default(1);
         });
+
+        // update all users company_group_id to 1
+
+        \Illuminate\Support\Facades\DB::table('users')
+                                      ->update(
+                                          array(
+                                              'company_group_id' => '1',
+                                          )
+                                      );
     }
 
     /**

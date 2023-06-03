@@ -21,6 +21,7 @@ use Modules\Support\Money;
 use Modules\Support\Search\Searchable;
 use Modules\Tag\Entities\Tag;
 use Modules\Tax\Entities\TaxClass;
+use Modules\User\Entities\CompanyPrice;
 
 class Product extends Model
 {
@@ -125,12 +126,6 @@ class Product extends Model
      * @var string
      */
     protected $slugAttribute = 'name';
-
-
-    public function productPrices()
-    {
-        return $this->hasMany(ProductPrice::class, 'product_id', 'id');
-    }
 
     public static function newArrivals($limit)
     {
@@ -314,6 +309,11 @@ class Product extends Model
         return Money::inDefaultCurrency($specialPrice);
     }
 
+    public function productPrices()
+    {
+        return $this->hasMany(ProductPrice::class, 'product_id', 'id');
+    }
+
     public function scopeForCard($query)
     {
         $query->withName()
@@ -399,7 +399,56 @@ class Product extends Model
 
     public function getPriceAttribute($price)
     {
-        return Money::inDefaultCurrency($price);
+        $productPrice = $this->getPriceForUserSpecial($price);
+        return Money::inDefaultCurrency($productPrice);
+    }
+
+    private function getPriceForUserSpecial($price)
+    {
+
+
+        $productPrice = $price;
+        if (auth('api')->user() != null) {
+
+
+            if (auth('api')->user()->company_group_id != null) {
+
+                $companyPrice = CompanyPrice::query()
+                                            ->where('id', auth('api')->user()->company_group_id)
+                                            ->first();
+
+
+                if ($companyPrice != null) {
+                    $productPrice = $this->getProductPrices($companyPrice->id, $price);
+
+                }
+
+
+            }
+
+
+        }
+
+        return $productPrice;
+    }
+
+    private function getProductPrices($companyPriceId, $price)
+    {
+
+        $productPrices = ProductPrice::query()
+                                     ->where('product_id', $this->id)
+                                     ->where('company_price_id', $companyPriceId)
+                                     ->first();
+
+        if ($productPrices != null) {
+            if ($productPrices->price == "0.0000") {
+                return $this->getProductPrices($companyPriceId - 1, $price);
+            }
+            $price = $productPrices->price;
+        }
+
+
+        return $price;
     }
 
     public function getSpecialPriceAttribute($specialPrice)

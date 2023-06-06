@@ -21,9 +21,9 @@ class ProductTabs extends Tabs
              ->add($this->general())
              ->add($this->price())
              ->add($this->inventory())
-             ->add($this->images());
+             ->add($this->images())
         //->add($this->downloads())
-        //->add($this->seo());
+        ->add($this->seo());
 
         $this->group('advanced_information', trans('product::products.tabs.group.advanced_information'))
              ->add($this->relatedProducts())

@@ -33,6 +33,7 @@ class SettingsController extends Controller
     {
         return response()->json([
                                     'data' => Page::query()
+                                        ->with('meta')
                                                   ->where('slug', $slug)
                                                   ->first()
                                 ]);

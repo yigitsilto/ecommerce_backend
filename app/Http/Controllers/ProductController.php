@@ -141,11 +141,14 @@ class ProductController extends Controller
 
         event(new ProductViewed($product));
 
+        $product->load('meta');
+
         $data = [
             'product' => $product,
             //            'upSellProducts' => $upSellProducts,
             //'review' => $review
         ];
+
 
         return response()->json($data);
 

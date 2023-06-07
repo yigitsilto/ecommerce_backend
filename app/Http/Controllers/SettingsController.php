@@ -4,6 +4,7 @@ namespace FleetCart\Http\Controllers;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -21,6 +22,7 @@ use Modules\Product\Entities\EntityFiles;
 use Modules\Product\Entities\Product;
 use Modules\Product\Entities\ProductCategories;
 use Modules\Product\Entities\ProductOption;
+use Modules\Product\Entities\ProductPrice;
 use Modules\Tag\Entities\Tag;
 use Themes\Storefront\Banner;
 
@@ -33,7 +35,7 @@ class SettingsController extends Controller
     {
         return response()->json([
                                     'data' => Page::query()
-                                        ->with('meta')
+                                                  ->with('meta')
                                                   ->where('slug', $slug)
                                                   ->first()
                                 ]);
@@ -182,29 +184,58 @@ class SettingsController extends Controller
 
         $client = new Client();
 
+        $url = "https://e-commerce-backend.piza.com.tr/public/products.xml";
+
         $response = $client->request('GET',
-                                     'http://cdn1.xmlbankasi.com/p1/palkdisticaret/image/data/xml/beautyprenses.xml');
+                                     $url);
 
         $xml = simplexml_load_string($response->getBody());
 
+        $index = 0;
         foreach ($xml as $item) {
+            DB::beginTransaction();
             $productMainCat = $item->mainCategory->__toString();
             $productCat = $item->category->__toString();
             $productSubCat = $item->subCategory->__toString(); // it can be null
-            $price = $item->Price->__toString();
-            $productName = $item->Name->__toString();
-            $productStok = $item->Stock->__toString();
-            $brand = $item->Brand->__toString();
-            $sku = $item->Product_code->__toString();
-            $description = $item->Description->__toString();
-            $imageUrl = $item->Image1->__toString();
+            $price = $item->price1->__toString();
+            $price2 = $item->price2->__toString();
+            $price3 = $item->price3->__toString();
+            $price4 = $item->price4->__toString();
+            $price5 = $item->price5->__toString();
+            $rebate = $item->rebate->__toString();
+            $rebateType = $item->rebateType->__toString();
+
+            if ($rebateType == '1') {
+                $specialPrice = $price - ($price * $rebate / 100);
+            } else {
+                $specialPrice = $rebate;
+            }
+
+
+            $productName = $item->label->__toString();
+
+            $productStok = $item->stockAmount->__toString();
+            $brand = $item->brand->__toString();
+            $sku = $item->barcode->__toString();
+            $description = $item->details->__toString();
+            $status = $item->status->__toString();
+            $imageUrls = [
+                $item->picture1Path->__toString(),
+                $item->picture2Path->__toString(),
+                $item->picture3Path->__toString(),
+                $item->picture4Path->__toString(),
+            ];
             $variants = $item->variants;
 
 
             try {
-                // DB::beginTransaction();
-                $brandId = $this->createBrand($brand);
-                $categoryValues = $this->createCategories($productMainCat, $productCat);
+                if (!empty($brand)) {
+                    $brandId = $this->createBrand($brand);
+                } else {
+                    $brandId = null;
+                }
+
+                $categoryValues = $this->createCategories($productMainCat, $productCat, $productSubCat);
 
 
                 $productValues = [
@@ -216,22 +247,27 @@ class SettingsController extends Controller
                     'description' => $description,
                     'brand_id' => $brandId,
                     'virtual' => false,
-                    'is_active' => true,
                     'price' => $price,
                     'manage_stock' => true,
                     'in_stock' => true,
-                    'sku' => $sku
+                    'sku' => $sku,
+                    'is_popular' => 1,
+                    'is_active' => $status,
+                    'special_price' => $specialPrice == $price ? null : $specialPrice,
                 ];
 
 
-                $product = $this->createProduct($productValues, $imageUrl, $variants);
+                $product = $this->createProduct($productValues, $imageUrls, $variants);
+                $this->savePrices($product, $price, $price2, $price3, $price4, $price5);
                 $this->productChanged = true;
-                // DB::commit();
+                DB::commit();
+                $index++;
 
 
             } catch (\Exception $e) {
+
+                DB::rollBack();
                 dd($e);
-                //  DB::rollBack();
             }
 
 
@@ -242,6 +278,9 @@ class SettingsController extends Controller
 
     private function createBrand($name)
     {
+        if (empty($name)) {
+            return null;
+        }
         $brand = Brand::query()
                       ->updateOrCreate([
                                            'slug' => $this->toSlug($name)
@@ -261,53 +300,66 @@ class SettingsController extends Controller
         return Str::slug($string);
     }
 
-    private function createCategories($mainCategory, $productCategory)
+    private function createCategories($mainCategory, $productCategory, $productSubCategory)
     {
 
 
-        $categoryMain = Category::query()
-                                ->firstOrCreate([
-                                                    "slug" => $this->toSlug($mainCategory),
-                                                ], [
-                                                    'name' => $mainCategory,
-                                                    "is_searchable" => "1",
-                                                    "is_active" => "1",
-                                                    "is_popular" => "0",
-                                                    "slug" => $this->toSlug($mainCategory),
-                                                    'parent_id' => null,
-                                                ]);
+        if (!empty($mainCategory)) {
+            $categoryMain = Category::query()
+                                    ->firstOrCreate([
+                                                        "slug" => $this->toSlug($mainCategory),
+                                                    ], [
+                                                        'name' => $mainCategory,
+                                                        "is_searchable" => "1",
+                                                        "is_active" => "1",
+                                                        "is_popular" => "0",
+                                                        "slug" => $this->toSlug($mainCategory),
+                                                        'parent_id' => null,
+                                                    ]);
+        }
 
-        $subCat = Category::query()
-                          ->firstOrCreate([
-                                              "slug" => $this->toSlug($productCategory),
-                                          ], [
-                                              'name' => $productCategory,
-                                              "is_searchable" => "1",
-                                              "is_active" => "1",
-                                              "is_popular" => "0",
-                                              "slug" => $this->toSlug($productCategory),
-                                              'parent_id' => $categoryMain->id,
-                                          ]);
+        if (!empty($productCategory)) {
+
+
+            $subCat = Category::query()
+                              ->firstOrCreate([
+                                                  "slug" => $this->toSlug($productCategory),
+                                              ], [
+                                                  'name' => $productCategory,
+                                                  "is_searchable" => "1",
+                                                  "is_active" => "1",
+                                                  "is_popular" => "1",
+                                                  "slug" => $this->toSlug($productCategory),
+                                                  'parent_id' => isset($categoryMain->id) ? $categoryMain->id : null,
+                                              ]);
+        }
+
+        if (!empty($productSubCategory)) {
+            $subCate = Category::query()
+                               ->firstOrCreate([
+                                                   "slug" => $this->toSlug($productSubCategory),
+                                               ], [
+                                                   'name' => $productSubCategory,
+                                                   "is_searchable" => "1",
+                                                   "is_active" => "1",
+                                                   "is_popular" => "1",
+                                                   "slug" => $this->toSlug($productSubCategory),
+                                                   'parent_id' => isset($subCat->id) ? $subCat->id : null,
+                                               ]);
+        }
+
 
         return [
-            $subCat->id,
-            $categoryMain->id
+            isset($subCat->id) ? $subCat->id : null,
+            isset($categoryMain->id) ? $categoryMain->id : null,
+            isset($subCate->id) ? $subCate->id : null,
         ];
 
 
     }
 
-    private function createProduct(array $values, $imageUrl, $variants)
+    private function createProduct(array $values, $imageUrls, $variants)
     {
-        $fileId = 0;
-        if (!empty($imageUrl)) {
-            $fileId = $this->saveFile($imageUrl, $this->toSlug($values['name']));
-            $values = array_merge([
-                                      'files' => [
-                                          'base_image' => $fileId,
-                                      ]
-                                  ], $values);
-        }
 
 
         $product = Product::query()
@@ -316,28 +368,55 @@ class SettingsController extends Controller
                                            ], $values);
 
 
-        foreach ($values['categories'][0] as $category) {
-            ProductCategories::query()
-                             ->updateOrCreate([
-                                                  'product_id' => $product->id,
-                                                  'category_id' => $category
-                                              ], [
-                                                  'product_id' => $product->id,
-                                                  'category_id' => $category
-                                              ]);
+        if (isset($values['categories'][0])) {
+            foreach ($values['categories'][0] as $category) {
+
+                if (!empty($category)) {
+                    ProductCategories::query()
+                                     ->updateOrCreate([
+                                                          'product_id' => $product->id,
+                                                          'category_id' => $category
+                                                      ], [
+                                                          'product_id' => $product->id,
+                                                          'category_id' => $category
+                                                      ]);
+                }
+            }
         }
 
-        if ($fileId != 0) {
-            EntityFiles::query()
-                       ->updateOrCreate([
-                                            'entity_id' => $product->id,
-                                            'entity_type' => 'Modules\Product\Entities\Product',
-                                            'file_id' => $fileId,
-                                            'zone' => 'base_image'
-                                        ]);
+        $isFileBase = true;
+
+
+        foreach ($imageUrls as $imageUrl) {
+            $fileId = 0;
+            if (!empty($imageUrl)) {
+                $imageUrl = strstr($imageUrl, '?revision', true);
+
+                $fileId = $this->saveFile($imageUrl, $this->toSlug($values['name']));
+
+                $values = array_merge([
+                                          'files' => [
+                                              'base_image' => $fileId,
+                                          ]
+                                      ], $values);
+            }
+
+            if ($fileId != 0) {
+
+                EntityFiles::query()
+                           ->updateOrCreate([
+                                                'entity_id' => $product->id,
+                                                'entity_type' => 'Modules\Product\Entities\Product',
+                                                'file_id' => $fileId,
+                                                'zone' => $isFileBase == true ? 'base_image' : 'additional_images'
+                                            ]);
+
+            }
+            $isFileBase = false;
         }
 
-        $this->createVariants($variants, $product->id);
+
+        $this->createVariants($variants, $product->id, $values);
 
 
         return $product;
@@ -349,7 +428,7 @@ class SettingsController extends Controller
 
         $file = file_get_contents($url);
         $imageInfo = getimagesizefromstring($file);
-
+        $name = basename($url);
 // Get the MIME type of the image
         $mimeType = $imageInfo['mime'];
 
@@ -380,42 +459,51 @@ class SettingsController extends Controller
 
     }
 
-    private function createVariants($variants, $productId)
+    private function createVariants($variants, $productId, $values)
     {
 
         if (!is_null($variants->variant)) {
             foreach ($variants->variant as $variant)
             {  // variants  variant spec name renk value kırmızı variant spec name renk value lacivert
 
-                $specName = (string)$variant->spec['name']; // Renk
-                $specValue = (string)$variant->spec; // Kırmızı
-                $specPrice = (string)$variant->price;
+                $price = 0;
+                if (($values['price'] - (string)$variant->vPrice1) > 0) {
+                    $price = $values['price'] - (string)$variant->vPrice1;
+                }
+
+                $stock = (string)$variant->vStockAmount;
 
 
                 $optionId = 0;
 
-                if ($this->productChanged) {
-                    $option = Option::query()
-                                    ->create(
-                                        [
-                                            "id" => null,
-                                            "name" => $specName,
-                                            "type" => "radio",
-                                            "is_required" => true
-                                        ]);
+                foreach ($variant->options as $item) {
 
-                    $optionId = $option->id;
+                    $specName = $item->option->variantName->__toString(); // Renk
+                    $specValue = $item->option->variantValue->__toString(); // Kırmızı
 
-                    $this->productChanged = false;
+                    if ($this->productChanged) {
+                        $option = Option::query()
+                                        ->create(
+                                            [
+                                                "id" => null,
+                                                "name" => $specName,
+                                                "type" => "radio",
+                                                "is_required" => true
+                                            ]);
 
-                } else {
+                        $optionId = $option->id;
 
-                    $exists = OptionTranslation::query()
-                                               ->where('name', $specName)
-                                               ->orderBy('id', 'desc')
-                                               ->first();
-                    $optionId = $exists->option_id;
+                        $this->productChanged = false;
 
+                    } else {
+
+                        $exists = OptionTranslation::query()
+                                                   ->where('name', $specName)
+                                                   ->orderBy('id', 'desc')
+                                                   ->first();
+                        $optionId = $exists->option_id;
+
+                    }
                 }
 
 
@@ -424,10 +512,11 @@ class SettingsController extends Controller
                                         ->create(
                                             [
                                                 'label' => $specValue,
-                                                'price' => $specPrice,
+                                                'price' => $price,
                                                 'price_type' => 'fixed',
                                                 'option_id' => $optionId,
-                                                'position' => 0
+                                                'position' => 0,
+                                                'stock' => $stock,
                                             ]);
 
                     ProductOption::query()
@@ -446,6 +535,69 @@ class SettingsController extends Controller
 
             }
         }
+    }
+
+    private function savePrices($product, $price, $price2, $price3, $price4, $price5)
+    {
+        ProductPrice::query()
+                    ->updateOrCreate([
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 1
+                                     ],
+                                     [
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 1,
+                                         'price' => $price,
+                                     ]
+                    );
+
+        ProductPrice::query()
+                    ->updateOrCreate([
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 2
+                                     ],
+                                     [
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 2,
+                                         'price' => $price2,
+                                     ]
+                    );
+
+        ProductPrice::query()
+                    ->updateOrCreate([
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 3
+                                     ],
+                                     [
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 3,
+                                         'price' => $price3,
+                                     ]
+                    );
+
+        ProductPrice::query()
+                    ->updateOrCreate([
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 4
+                                     ],
+                                     [
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 4,
+                                         'price' => $price4,
+                                     ]
+                    );
+
+        ProductPrice::query()
+                    ->updateOrCreate([
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 5
+                                     ],
+                                     [
+                                         'product_id' => $product->id,
+                                         'company_price_id' => 5,
+                                         'price' => $price5,
+                                     ]
+                    );
     }
 
     private function getFooterMenu($menuId)

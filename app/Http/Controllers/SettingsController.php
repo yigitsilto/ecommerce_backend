@@ -2,6 +2,9 @@
 
 namespace FleetCart\Http\Controllers;
 
+use FleetCart\Filter;
+use FleetCart\FilterValue;
+use FleetCart\ProductFilterValue;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -257,11 +260,15 @@ class SettingsController extends Controller
                 ];
 
 
-                $product = $this->createProduct($productValues, $imageUrls, $variants);
+                $product = $this->createProduct($productValues, $imageUrls, $variants,$brand );
                 $this->savePrices($product, $price, $price2, $price3, $price4, $price5);
                 $this->productChanged = true;
                 DB::commit();
                 $index++;
+//                if ($index > 10){
+//                    dd($item);
+//                    break;
+//                }
 
 
             } catch (\Exception $e) {
@@ -288,6 +295,8 @@ class SettingsController extends Controller
                                            'name' => $name,
                                            'is_active' => true,
                                        ]);
+
+
 
         return $brand->id;
 
@@ -358,7 +367,7 @@ class SettingsController extends Controller
 
     }
 
-    private function createProduct(array $values, $imageUrls, $variants)
+    private function createProduct(array $values, $imageUrls, $variants, $brand)
     {
 
 
@@ -367,6 +376,92 @@ class SettingsController extends Controller
                                                'slug' => $this->toSlug($values['name'])
                                            ], $values);
 
+
+        // brands filter
+
+       if (!empty($brand)){
+           $filter = Filter::query()
+                           ->firstOrCreate([
+                                               'slug' => $this->toSlug('Markalar')
+                                           ],
+                                           [
+                                               'slug' => $this->toSlug('Markalar'),
+                                               'title' => 'Markalar',
+                                               'status' => 1,
+                                           ]
+                           );
+
+
+           $filterValue = FilterValue::query()
+                                     ->firstOrCreate([
+                                                         'slug' => $this->toSlug($values['brand_id'])
+                                                     ],
+                                                     [
+                                                         'slug' => $this->toSlug($values['brand_id']),
+                                                         'title' => $values['brand_id'],
+                                                         'filter_id' => $filter->id,
+                                                         'status' => 1,
+                                                     ]
+                                     );
+
+           ProductFilterValue::query()
+                             ->firstOrCreate([
+                                                 'product_id' => $product->id,
+                                                 'filter_value_id' => $filterValue->id,
+                                                 'filter_id' => $filter->id,
+                                             ],
+
+                                             [
+                                                 'product_id' => $product->id,
+                                                 'filter_value_id' => $filterValue->id,
+                                                 'filter_id' => $filter->id,
+                                             ]);
+       }
+
+
+
+        $filter = Filter::query()
+                        ->firstOrCreate([
+                                            'slug' => $this->toSlug('Kategoriler')
+                                        ],
+                                        [
+                                            'slug' => $this->toSlug('Kategoriler'),
+                                            'title' => 'Kategoriler',
+                                            'status' => 1,
+                                        ]
+                        );
+
+        $br = Category::query()
+                      ->where('id',
+                              $values['brand_id'])
+                      ->first();
+
+        if ($br) {
+            $b = $br->name;
+            FilterValue::query()
+                       ->updateOrCreate([
+                                            'filter_id' => $filter->id,
+                                            'slug' => $this->toSlug($b),
+                                        ],
+                                        [
+                                            'filter_id' => $filter->id,
+                                            'title' => $b,
+                                            'slug' => $this->toSlug($b),
+                                        ]);
+
+        }
+
+
+//        Filter::query()
+//                         ->firstOrCreate([
+//                                             'slug' => $this->toSlug('Markalar')
+//                                         ],
+//                                         [
+//                                             'slug' => $this->toSlug('Markalar'),
+//                                             'name' => 'Markalar',
+//                                             'status' => 1,
+//                                         ]
+//                         );
 
         if (isset($values['categories'][0])) {
             foreach ($values['categories'][0] as $category) {
@@ -381,6 +476,40 @@ class SettingsController extends Controller
                                                           'category_id' => $category
                                                       ]);
                 }
+
+                $cr = Category::query()
+                              ->where('id',
+                                      $category)
+                              ->first();
+
+                if ($cr) {
+                    $c = $cr->name;
+                    $filterValue = FilterValue::query()
+                                              ->updateOrCreate([
+                                                                   'filter_id' => $filter->id,
+                                                                   'slug' => $this->toSlug($c),
+                                                               ],
+                                                               [
+                                                                   'filter_id' => $filter->id,
+                                                                   'title' => $c,
+                                                                   'slug' => $this->toSlug($c),
+                                                               ]);
+
+                    ProductFilterValue::query()
+                                      ->firstOrCreate([
+                                                          'product_id' => $product->id,
+                                                          'filter_value_id' => $filterValue->id,
+                                                          'filter_id' => $filter->id,
+                                                      ],
+
+                                                      [
+                                                          'product_id' => $product->id,
+                                                          'filter_value_id' => $filterValue->id,
+                                                          'filter_id' => $filter->id,
+                                                      ]);
+                }
+
+
             }
         }
 

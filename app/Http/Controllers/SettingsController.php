@@ -260,7 +260,7 @@ class SettingsController extends Controller
                 ];
 
 
-                $product = $this->createProduct($productValues, $imageUrls, $variants,$brand );
+                $product = $this->createProduct($productValues, $imageUrls, $variants, $brand);
                 $this->savePrices($product, $price, $price2, $price3, $price4, $price5);
                 $this->productChanged = true;
                 DB::commit();
@@ -295,7 +295,6 @@ class SettingsController extends Controller
                                            'name' => $name,
                                            'is_active' => true,
                                        ]);
-
 
 
         return $brand->id;
@@ -379,45 +378,44 @@ class SettingsController extends Controller
 
         // brands filter
 
-       if (!empty($brand)){
-           $filter = Filter::query()
-                           ->firstOrCreate([
-                                               'slug' => $this->toSlug('Markalar')
-                                           ],
-                                           [
-                                               'slug' => $this->toSlug('Markalar'),
-                                               'title' => 'Markalar',
-                                               'status' => 1,
-                                           ]
-                           );
+        if (!empty($brand)) {
+            $filter = Filter::query()
+                            ->firstOrCreate([
+                                                'slug' => $this->toSlug('Markalar')
+                                            ],
+                                            [
+                                                'slug' => $this->toSlug('Markalar'),
+                                                'title' => 'Markalar',
+                                                'status' => 1,
+                                            ]
+                            );
 
 
-           $filterValue = FilterValue::query()
-                                     ->firstOrCreate([
-                                                         'slug' => $this->toSlug($values['brand_id'])
-                                                     ],
-                                                     [
-                                                         'slug' => $this->toSlug($values['brand_id']),
-                                                         'title' => $values['brand_id'],
-                                                         'filter_id' => $filter->id,
-                                                         'status' => 1,
-                                                     ]
-                                     );
+            $filterValue = FilterValue::query()
+                                      ->firstOrCreate([
+                                                          'slug' => $this->toSlug($values['brand_id'])
+                                                      ],
+                                                      [
+                                                          'slug' => $this->toSlug($values['brand_id']),
+                                                          'title' => $brand,
+                                                          'filter_id' => $filter->id,
+                                                          'status' => 1,
+                                                      ]
+                                      );
 
-           ProductFilterValue::query()
-                             ->firstOrCreate([
-                                                 'product_id' => $product->id,
-                                                 'filter_value_id' => $filterValue->id,
-                                                 'filter_id' => $filter->id,
-                                             ],
+            ProductFilterValue::query()
+                              ->firstOrCreate([
+                                                  'product_id' => $product->id,
+                                                  'filter_value_id' => $filterValue->id,
+                                                  'filter_id' => $filter->id,
+                                              ],
 
-                                             [
-                                                 'product_id' => $product->id,
-                                                 'filter_value_id' => $filterValue->id,
-                                                 'filter_id' => $filter->id,
-                                             ]);
-       }
-
+                                              [
+                                                  'product_id' => $product->id,
+                                                  'filter_value_id' => $filterValue->id,
+                                                  'filter_id' => $filter->id,
+                                              ]);
+        }
 
 
         $filter = Filter::query()

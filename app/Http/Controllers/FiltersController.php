@@ -12,6 +12,8 @@ class FiltersController extends Controller
                          ->with('values')
                          ->get();
 
+
+
         return response()->json($filters);
 
     }

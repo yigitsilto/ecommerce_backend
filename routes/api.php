@@ -31,7 +31,7 @@ Route::get('products/{slug}', [ProductController::class, 'show']);
 Route::get('relatedProducts/{slug}', [ProductController::class, 'relatedProducts']);
 Route::get('categoriesForProducts', [ProductController::class, 'categoriesForProduct']); // TODO silinebilir temizlik
 Route::get('products', [ProductController::class, 'getProductsByFilter']);
-Route::get('brands/{brand}/products', [ProductController::class, 'getProductsByBrandSlug']);
+Route::get('productsByBrand/{brand}', [ProductController::class, 'getProductsByBrandSlug']);
 Route::get('suggestions', [SuggestionController::class, 'index']);
 Route::get('search', [SuggestionController::class, 'searchProducts']);
 Route::get('settings',[\FleetCart\Http\Controllers\SettingsController::class,'index']);

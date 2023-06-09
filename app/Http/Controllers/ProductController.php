@@ -3,12 +3,14 @@
 namespace FleetCart\Http\Controllers;
 
 use FleetCart\Blog;
+use FleetCart\Http\Requests\BrandProductListRequest;
 use FleetCart\Http\Requests\CategoryProductListRequest;
 use FleetCart\Http\Resources\CategoryResource;
 use FleetCart\Http\Resources\HomePageProductsResource;
 use FleetCart\Http\Resources\ProductsByCategoryCollection;
 use FleetCart\Http\Resources\RelatedProductResourceCollection;
 use FleetCart\RelatedProduct;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Modules\Category\Entities\Category;
 use Modules\Product\Entities\Product;
@@ -234,6 +236,43 @@ class ProductController extends Controller
         return response()->json([
                                     'products' => new ProductsByCategoryCollection($products->paginate(12)),
                                 ]);
+
+    }
+
+    public function getProductsByBrandSlug($brand, BrandProductListRequest $request){
+
+        $products = Product::query()
+            ->whereHas('brand', function ($query) use ($brand) {
+                $query->where('slug', $brand);
+            })
+            ->where('is_active', 1)
+                           ->with([
+                                      'brand' => function ($query) use ($brand) {
+                                          $query->where('slug', $brand);
+                                      },
+                                      'categories',
+                                      'filterValues'
+                                  ]);
+
+        if ($request->has('order')) {
+            if (($request->validated()['order']) == 'orderByPrice') {
+                $products = $products->orderBy('price', 'asc');
+            } elseif (($request->validated()['order']) == 'orderByPriceAsc') {
+                $products = $products->orderBy('price', 'desc');
+            } elseif (($request->validated()['order']) == 'orderByName') {
+                $products = $products->orderBy('slug', 'desc');
+            } elseif (($request->validated()['order']) == 'orderByNameAsc') {
+                $products = $products->orderBy('slug', 'asc');
+            }
+        }
+
+        event(new ShowingProductList($products));
+
+        return response()->json([
+                                    'products' => new ProductsByCategoryCollection($products->paginate(12)),
+                                ]);
+
+
 
     }
 

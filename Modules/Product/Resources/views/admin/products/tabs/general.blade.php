@@ -20,7 +20,7 @@
         {{ Form::select('tags', trans('product::attributes.tags'), $errors, $tags, $product, ['class' => 'selectize prevent-creation', 'multiple' => true]) }}
         {{ Form::checkbox('virtual', trans('product::attributes.virtual'), trans('product::products.form.the_product_won\'t_be_shipped'), $errors, $product) }}
         {{ Form::checkbox('is_active', trans('product::attributes.is_active'), trans('product::products.form.enable_the_product'), $errors, $product, ['checked' => true]) }}
-        {{ Form::checkbox('is_popular', 'Popüler Ürün', 'Popüler Ürünlere Ekle', $errors, $product, ['checked' => true]) }}
+{{--        {{ Form::checkbox('is_popular', 'Popüler Ürün', 'Popüler Ürünlere Ekle', $errors, $product, ['checked' => true]) }}--}}
 
     </div>
 </div>

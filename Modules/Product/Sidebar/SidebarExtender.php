@@ -41,6 +41,14 @@ class SidebarExtender extends BaseSidebarExtender
                         $this->auth->hasAccess('admin.products.index')
                     );
                 });
+
+                $item->item("Popüler Ürünler", function (Item $item) {
+                    $item->weight(5);
+                    $item->route('admin.popularProducts.index');
+                    $item->authorize(
+                        $this->auth->hasAccess('admin.products.index')
+                    );
+                });
             });
         });
     }

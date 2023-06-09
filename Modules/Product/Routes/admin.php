@@ -76,3 +76,13 @@ Route::delete('filters/value/{id}', [
     'as' => 'admin.filters.value.delete',
     'uses' => 'FilterController@deleteValue',
 ]);
+
+Route::get('popular-products', [
+    'as' => 'admin.popularProducts.index',
+    'uses' => 'PopularProductsController@index',
+]);
+
+Route::post('popular-products', [
+    'as' => 'admin.popularProducts.store',
+    'uses' => 'PopularProductsController@store',
+]);

@@ -49,7 +49,7 @@
                                         {{ Form::text('name', trans('category::attributes.name'), $errors, null, ['required' => true]) }}
                                         {{ Form::checkbox('is_searchable', trans('category::attributes.is_searchable'), trans('category::categories.form.show_this_category_in_search_box'), $errors) }}
                                         {{ Form::checkbox('is_active', trans('category::attributes.is_active'), trans('category::categories.form.enable_the_category'), $errors) }}
-                                        {{ Form::checkbox('is_popular', 'Popüler Kategori', 'Popüler Kategorilere Ekle', $errors) }}
+{{--                                        {{ Form::checkbox('is_popular', 'Popüler Kategori', 'Popüler Kategorilere Ekle', $errors) }}--}}
                                     </div>
                                 </div>
                             </div>

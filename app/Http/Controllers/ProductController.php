@@ -12,6 +12,7 @@ use FleetCart\Http\Resources\RelatedProductResourceCollection;
 use FleetCart\RelatedProduct;
 use Illuminate\Support\Facades\Redis;
 use Modules\Category\Entities\Category;
+use Modules\Product\Entities\PopularProduct;
 use Modules\Product\Entities\Product;
 use Modules\Product\Events\ProductViewed;
 use Modules\Product\Events\ShowingProductList;
@@ -40,29 +41,38 @@ class ProductController extends Controller
         $products = unserialize(Redis::get('products'));
         $sliders = unserialize(Redis::get('sliders'));
         $blogs = unserialize(Redis::get('blogs'));
-        $popularCategories = unserialize(Redis::get('popularCategories'));
+//        $popularCategories = unserialize(Redis::get('popularCategories'));
 
 
-        if (!$popularCategories) {
-            $popularCategories = Category::inRandomOrder()
-                                         ->whereHas('products')
-                                         ->with('files')
-                                         ->where('is_active', true)
-                                         ->where('is_popular', true)
-                                         ->limit(6)
-                                         ->get();
-            Redis::set('popularCategories', serialize($popularCategories));
-        }
-
+//        if (!$popularCategories) {
+//            $popularCategories = Category::inRandomOrder()
+//                                         ->whereHas('products')
+//                                         ->with('files')
+//                                         ->where('is_active', true)
+//                                         ->where('is_popular', true)
+//                                         ->limit(6)
+//                                         ->get();
+//            Redis::set('popularCategories', serialize($popularCategories));
+//        }
 
         if (!$products) {
-            $products = Product::query()
-                               ->with('brand')
-                               ->where('is_popular', 1)
-                               ->inRandomOrder()
-                               ->limit(20)
-                               ->get();
+            $products = PopularProduct::query()
+                                      ->with([
+                                                 'product' => function ($query) {
+                                                     $query->where('is_active', true);
+                                                 },
+                                                 'product.brand'
+                                             ])
+                                      ->whereHas('product', function ($query) {
+                                          $query->where('is_active', true);
+                                      })
+                                      ->inRandomOrder()
+                                      ->limit(16)
+                                      ->get();
+
+
             Redis::set('products', serialize($products));
+
         }
 
 
@@ -95,7 +105,7 @@ class ProductController extends Controller
                                     'products' => HomePageProductsResource::collection($products),
                                     'sliders' => $sliders,
                                     'blogs' => $blogs,
-                                    'categories' => $popularCategories
+                                    //                                    'categories' => $popularCategories
                                 ]);
     }
 
@@ -190,7 +200,7 @@ class ProductController extends Controller
                            ->whereHas('categories', function ($query) use ($category) {
                                $query->where('slug', $category);
                            })
-            ->where('is_active', 1)
+                           ->where('is_active', 1)
                            ->with([
                                       'brand',
                                       'categories' => function ($query) use ($category) {

@@ -42,7 +42,7 @@ class SaveProductRequest extends Request
             'in_stock' => 'required|boolean',
             'new_from' => 'nullable|date',
             'new_to' => 'nullable|date',
-            'is_popular' => 'required|boolean',
+//            'is_popular' => 'required|boolean',
         ];
     }
 

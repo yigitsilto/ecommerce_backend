@@ -2,6 +2,7 @@
 
 namespace Modules\Product\Http\Controllers\Admin;
 
+use FleetCart\Helpers\RedisHelper;
 use Illuminate\Http\Request;
 use Modules\Product\Entities\PopularProduct;
 use Modules\Product\Entities\Product;
@@ -52,6 +53,8 @@ class PopularProductsController
                                   ]);
             }
         }
+
+        RedisHelper::redisClear();
 
         return redirect()
             ->back()

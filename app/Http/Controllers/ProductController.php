@@ -10,7 +10,6 @@ use FleetCart\Http\Resources\HomePageProductsResource;
 use FleetCart\Http\Resources\ProductsByCategoryCollection;
 use FleetCart\Http\Resources\RelatedProductResourceCollection;
 use FleetCart\RelatedProduct;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Modules\Category\Entities\Category;
 use Modules\Product\Entities\Product;
@@ -184,30 +183,23 @@ class ProductController extends Controller
         return CategoryResource::collection($query);
     }
 
-    public function getProductsByFilter(CategoryProductListRequest $request)
+    public function getProductsByFilter($category, CategoryProductListRequest $request)
     {
 
         $products = Product::query()
+                           ->whereHas('categories', function ($query) use ($category) {
+                               $query->where('slug', $category);
+                           })
+            ->where('is_active', 1)
                            ->with([
                                       'brand',
-                                      'categories',
+                                      'categories' => function ($query) use ($category) {
+                                          $query->where('slug', $category);
+                                      },
                                       'filterValues'
                                   ]);
 
 
-        $slug = $request->has('brand') ? $request->validated()['brand'] : $request->validated()['category'];
-
-        if ($request->has('brand')) {
-            $products = $products->whereHas('brand', function ($query) use ($slug) {
-                $query->where('slug', $slug);
-            });
-        }
-
-        if ($request->has('category')) {
-            $products = $products->whereHas('categories', function ($query) use ($slug) {
-                $query->where('slug', $slug);
-            });
-        }
         if ($request->has('order')) {
             if (($request->validated()['order']) == 'orderByPrice') {
                 $products = $products->orderBy('price', 'asc');
@@ -220,13 +212,11 @@ class ProductController extends Controller
             }
         }
 
-
         if ($request->has('filter') && !is_null($request->validated()['filter'])) {
             $filters = explode(',', $request->validated()['filter']);
             $products = $products->whereHas('filterValues.filterValue', function ($query) use ($filters) {
                 $query->whereIn('slug', $filters);
             });
-
 
         }
 
@@ -239,13 +229,14 @@ class ProductController extends Controller
 
     }
 
-    public function getProductsByBrandSlug($brand, BrandProductListRequest $request){
+    public function getProductsByBrandSlug($brand, BrandProductListRequest $request)
+    {
 
         $products = Product::query()
-            ->whereHas('brand', function ($query) use ($brand) {
-                $query->where('slug', $brand);
-            })
-            ->where('is_active', 1)
+                           ->whereHas('brand', function ($query) use ($brand) {
+                               $query->where('slug', $brand);
+                           })
+                           ->where('is_active', 1)
                            ->with([
                                       'brand' => function ($query) use ($brand) {
                                           $query->where('slug', $brand);
@@ -271,7 +262,6 @@ class ProductController extends Controller
         return response()->json([
                                     'products' => new ProductsByCategoryCollection($products->paginate(12)),
                                 ]);
-
 
 
     }

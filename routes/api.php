@@ -30,7 +30,7 @@ Route::resource('homePage', ProductController::class)->only('index');
 Route::get('products/{slug}', [ProductController::class, 'show']);
 Route::get('relatedProducts/{slug}', [ProductController::class, 'relatedProducts']);
 Route::get('categoriesForProducts', [ProductController::class, 'categoriesForProduct']); // TODO silinebilir temizlik
-Route::get('products', [ProductController::class, 'getProductsByFilter']);
+Route::get('products/category/{category}', [ProductController::class, 'getProductsByFilter']);
 Route::get('productsByBrand/{brand}', [ProductController::class, 'getProductsByBrandSlug']);
 Route::get('suggestions', [SuggestionController::class, 'index']);
 Route::get('search', [SuggestionController::class, 'searchProducts']);

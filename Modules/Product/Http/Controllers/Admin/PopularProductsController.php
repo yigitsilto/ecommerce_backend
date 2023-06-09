@@ -13,39 +13,44 @@ class PopularProductsController
     {
         $popularProducts = PopularProduct::query()
                                          ->with('product')
-                                         ->get()->pluck('product.id', 'id');
+                                         ->select('product_id')
+                                         ->get()->pluck('product.name', 'product_id');
+
 
         $products = Product::query()
                            ->where('is_active', 1)
-                           ->get()
-                           ->pluck('name', 'id');
+                           ->get()->pluck('name', 'id');
 
         return view('product::admin.products.popularProducts.index')->with(compact('products', 'popularProducts'));
     }
 
     public function store(Request $request)
     {
-
-        $productIds = $request->get('id');
+        $productIds = $request->get('ids');
 
         // save the products array
 
-        foreach ($productIds as $productId) {
-            if (Product::query()
-                       ->where('id', $productId)
-                       ->doesntExist()) {
-                continue;
+
+        PopularProduct::query()->truncate();
+
+        if ($productIds != null){
+            foreach ($productIds as $productId) {
+                if (Product::query()
+                           ->where('id', $productId)
+                           ->doesntExist()) {
+                    continue;
+                }
+
+                PopularProduct::query()
+                              ->firstOrCreate(
+                                  [
+                                      'product_id' => $productId,
+                                  ],
+
+                                  [
+                                      'product_id' => $productId,
+                                  ]);
             }
-
-            PopularProduct::query()
-                          ->firstOrCreate(
-                              [
-                                  'product_id' => $productId,
-                              ],
-
-                              [
-                                  'product_id' => $productId,
-                              ]);
         }
 
         return redirect()

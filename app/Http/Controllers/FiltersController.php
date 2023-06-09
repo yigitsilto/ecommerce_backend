@@ -9,6 +9,7 @@ class FiltersController extends Controller
     public function index()
     {
         $filters = Filter::query()
+            ->where('status', true)
                          ->with('values')
                          ->get();
 

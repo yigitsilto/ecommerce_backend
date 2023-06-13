@@ -68,9 +68,9 @@ trait HasCrudActions
         if ($request instanceof SaveProductRequest) {
 
 
-            $request = $this->getRequest('update')
+            $request = $this->getRequest('store')
                             ->merge([
-                                        'price' => $this->getRequest('update')
+                                        'price' => $this->getRequest('store')
                                                         ->all()['prices'][1]
                                     ]);
         }
@@ -428,6 +428,7 @@ trait HasCrudActions
      */
     public function update($id)
     {
+
         $entity = $this->getEntity($id);
 
         $request = $this->getRequest('update');

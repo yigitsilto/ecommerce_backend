@@ -23,8 +23,8 @@ class SliderTabs extends Tabs
     {
         $this->group('slider_information', trans('slider::sliders.tabs.group.slider_information'))
             ->active()
-            ->add($this->slides())
-            ->add($this->settings());
+            ->add($this->slides());
+//            ->add($this->settings());
     }
 
     private function slides()

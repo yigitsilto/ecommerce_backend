@@ -272,9 +272,8 @@ class SettingsController extends Controller
 
 
             } catch (\Exception $e) {
-
                 DB::rollBack();
-                dd($e);
+                continue;
             }
 
 
@@ -553,7 +552,7 @@ class SettingsController extends Controller
     private function saveFile($url, $name)
     {
 
-        $file = file_get_contents($url);
+        $file = @file_get_contents($url);
         $imageInfo = getimagesizefromstring($file);
         $name = basename($url);
 // Get the MIME type of the image

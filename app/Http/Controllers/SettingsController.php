@@ -187,7 +187,7 @@ class SettingsController extends Controller
 
         $client = new Client();
 
-        $url = "https://e-commerce-backend.piza.com.tr/public/products.xml";
+        $url = "https://backend.bibuti.com.tr/products.xml";
 
         $response = $client->request('GET',
                                      $url);

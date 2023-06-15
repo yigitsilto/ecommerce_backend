@@ -20,8 +20,9 @@ class SaveSliderRequest extends Request
      */
     public function rules()
     {
+
         return [
-            'name' => 'required',
+            'name' => 'sometimes',
         ];
     }
 }

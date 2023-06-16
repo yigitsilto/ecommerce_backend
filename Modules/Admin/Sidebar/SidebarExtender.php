@@ -33,14 +33,14 @@ class SidebarExtender extends BaseSidebarExtender
                 );
             });
 
-            $group->item(trans('admin::sidebar.tools'), function (Item $item) {
-                $item->icon('fa fa-wrench');
-                $item->weight(20);
-                $item->route('admin.importer.index');
-                $item->authorize(
-                    $this->auth->hasAnyAccess(['admin.importer.index'])
-                );
-            });
+//            $group->item(trans('admin::sidebar.tools'), function (Item $item) {
+//                $item->icon('fa fa-wrench');
+//                $item->weight(20);
+//                $item->route('admin.importer.index');
+//                $item->authorize(
+//                    $this->auth->hasAnyAccess(['admin.importer.index'])
+//                );
+//            });
         });
     }
 }

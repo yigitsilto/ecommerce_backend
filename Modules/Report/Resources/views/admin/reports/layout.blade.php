@@ -26,9 +26,15 @@
 
                                 <select name="type" id="report-type" class="custom-select-black">
                                     @foreach (trans('report::admin.filters.report_types') as $type => $label)
-                                        <option value="{{ $type }}" {{ $request->type === $type ? 'selected' : '' }}>
-                                            {{ $label }}
-                                        </option>
+                                        @if($type == "search_report" || $type == "tax_report" || $type == 'shipping_report' || $type == "taxed_products_report")
+
+                                        @else
+                                            <option value="{{ $type }}" {{ $request->type === $type ? 'selected' : '' }}>
+                                                {{$label}}
+                                            </option>
+
+                                        @endif
+
                                     @endforeach
                                 </select>
                             </div>

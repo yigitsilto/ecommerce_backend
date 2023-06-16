@@ -2,7 +2,7 @@
     <div class="col-md-8">
         {{ Form::text('name', trans('coupon::attributes.name'), $errors, $coupon, ['required' => true]) }}
         {{ Form::text('code', trans('coupon::attributes.code'), $errors, $coupon, ['required' => true]) }}
-        {{ Form::select('is_percent', trans('coupon::attributes.is_percent'), $errors, [0=>'Fixed'], $coupon) }}
+        {{ Form::select('is_percent', trans('coupon::attributes.is_percent'), $errors, [0=>'Sabit'], $coupon) }}
         {{ Form::number('value', trans('coupon::attributes.value'), $errors, $coupon, ['min' => 0]) }}
         {{ Form::checkbox('free_shipping', trans('coupon::attributes.free_shipping'), trans('coupon::coupons.form.allow_free_shipping'), $errors, $coupon->freeShipping()) }}
 {{--        {{ Form::text('start_date', trans('coupon::attributes.start_date'), $errors, $coupon, ['class' => 'datetime-picker', 'data-default-date' => $coupon->start_date]) }}--}}

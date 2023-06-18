@@ -5,6 +5,8 @@ namespace FleetCart\Http\Controllers;
 use FleetCart\Basket;
 use FleetCart\User;
 use Illuminate\Support\Facades\Hash;
+use Modules\User\Entities\Company;
+use Modules\User\Entities\CompanyPrice;
 use Modules\User\Http\Requests\RegisterRequest;
 
 class AuthController extends Controller
@@ -32,7 +34,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        return $this->respondWithToken($token);
+        return $this->respondWithToken($token,$credentials);
     }
 
     /**
@@ -42,8 +44,17 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function respondWithToken($token)
+    protected function respondWithToken($token,$credentials)
     {
+
+        $payload = [
+            'group' => Company::query()->where('id', auth('api')->user()->company_group_id)->first()
+                ->company_price_id,
+            'email' => auth('api')->user()->email,
+            // Diğer kullanıcı bilgileri burada eklenebilir
+        ];
+
+        $token = auth('api')->claims($payload)->attempt($credentials);
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',

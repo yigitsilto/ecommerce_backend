@@ -57,9 +57,6 @@ class CheckoutController extends Controller
             $coupon = Coupon::query()
                             ->find($request->coupon_id);
 
-            if (!$coupon->is_active){
-                return response()->json(['message' => 'Bu kuponu şu an için kullanamazsınız!'], 500);
-            }
 
             resolve(Pipeline::class)
                 ->send($coupon)
@@ -92,9 +89,7 @@ class CheckoutController extends Controller
                         ->where('code', $request->code)
                         ->first();
 
-        if (!$coupon->is_active){
-            return response()->json(['message' => 'Bu kuponu şu an için kullanamazsınız!'], 500);
-        }
+
 
 
         $prices = $this->checkoutService->calculateTotalPriceInBasket();

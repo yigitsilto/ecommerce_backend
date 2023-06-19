@@ -21,11 +21,11 @@
             {{ Form::text('store_zip', trans('setting::attributes.store_zip'), $errors, $settings) }}
         </div>
 
-        <div class="box-content clearfix">
-            <h4 class="section-title">{{ trans('setting::settings.form.privacy_settings') }}</h4>
+{{--        <div class="box-content clearfix">--}}
+{{--            <h4 class="section-title">{{ trans('setting::settings.form.privacy_settings') }}</h4>--}}
 
-            {{ Form::checkbox('store_phone_hide', trans('setting::attributes.store_phone_hide'), trans('setting::settings.form.hide_store_phone'), $errors, $settings) }}
-            {{ Form::checkbox('store_email_hide', trans('setting::attributes.store_email_hide'), trans('setting::settings.form.hide_store_email'), $errors, $settings) }}
-        </div>
+{{--            {{ Form::checkbox('store_phone_hide', trans('setting::attributes.store_phone_hide'), trans('setting::settings.form.hide_store_phone'), $errors, $settings) }}--}}
+{{--            {{ Form::checkbox('store_email_hide', trans('setting::attributes.store_email_hide'), trans('setting::settings.form.hide_store_email'), $errors, $settings) }}--}}
+{{--        </div>--}}
     </div>
 </div>

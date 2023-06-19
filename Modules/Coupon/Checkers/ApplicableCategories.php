@@ -3,7 +3,7 @@
 namespace Modules\Coupon\Checkers;
 
 use Closure;
-use Modules\Cart\Facades\Cart;
+use FleetCart\Basket;
 use Modules\Coupon\Exceptions\InapplicableCouponException;
 
 class ApplicableCategories
@@ -16,9 +16,13 @@ class ApplicableCategories
             return $next($coupon);
         }
 
-        $cartItems = Cart::items()->filter(function ($cartItem) use ($coupon) {
-            return $coupon->categories->intersect($cartItem->product->categories)->isNotEmpty();
-        });
+        $cartItems = Basket::query()
+                           ->where('user_id', auth('api')->user()->id)
+                           ->get()
+                           ->filter(function ($cartItem) use ($coupon) {
+                               return $coupon->categories->intersect($cartItem->product->categories)
+                                                         ->isNotEmpty();
+                           });
 
         if ($cartItems->isEmpty()) {
             throw new InapplicableCouponException;

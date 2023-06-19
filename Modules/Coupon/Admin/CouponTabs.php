@@ -14,8 +14,8 @@ class CouponTabs extends Tabs
         $this->group('coupon_information', trans('coupon::coupons.tabs.group.coupon_information'))
             ->active()
             ->add($this->general())
-            ->add($this->usageRestrictions());
-            //->add($this->usageLimits());
+            ->add($this->usageRestrictions())
+            ->add($this->usageLimits());
     }
 
     public function general()

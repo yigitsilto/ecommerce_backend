@@ -3,7 +3,7 @@
 namespace Modules\Coupon\Checkers;
 
 use Closure;
-use Modules\Cart\Facades\Cart;
+use FleetCart\Basket;
 use Modules\Coupon\Exceptions\InapplicableCouponException;
 
 class ExcludedProducts
@@ -16,7 +16,10 @@ class ExcludedProducts
             return $next($coupon);
         }
 
-        foreach (Cart::items() as $cartItem) {
+        foreach (Basket::query()
+                       ->where('user_id', auth('api')->user()->id)
+                       ->get() as $cartItem) {
+
             if ($this->inExcludedProducts($coupon, $cartItem)) {
                 throw new InapplicableCouponException;
             }

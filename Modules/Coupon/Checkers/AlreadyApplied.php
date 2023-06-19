@@ -10,6 +10,7 @@ class AlreadyApplied
 {
     public function handle($coupon, Closure $next)
     {
+
         if (Cart::couponAlreadyApplied($coupon)) {
             throw new CouponAlreadyAppliedException;
         }

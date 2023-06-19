@@ -154,13 +154,13 @@ class Coupon extends Model
 
     public function perCustomerUsageLimitReached($customerEmail = null)
     {
-        if ($this->couponHasNoUsageLimitForCustomers() ||
-            $this->userIsNotLoggedInWhenAddingCouponToCart($customerEmail)
+        if ($this->couponHasNoUsageLimitForCustomers()
+//            $this->userIsNotLoggedInWhenAddingCouponToCart($customerEmail)
         ) {
             return false;
         }
 
-        $customerEmail = $customerEmail ?: auth()->user()->email;
+        $customerEmail = $customerEmail ?: auth('api')->user()->email;
 
         $used = $this->orders()
             ->where('customer_email', $customerEmail)

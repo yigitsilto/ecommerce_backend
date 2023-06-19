@@ -5,12 +5,35 @@ namespace FleetCart\Http\Controllers;
 use FleetCart\Http\Requests\StoreCheckoutRequest;
 use FleetCart\Services\CheckoutService;
 use Illuminate\Http\Request;
+use Illuminate\Pipeline\Pipeline;
+use Modules\Coupon\Checkers\ApplicableCategories;
+use Modules\Coupon\Checkers\ApplicableProducts;
+use Modules\Coupon\Checkers\CouponExists;
+use Modules\Coupon\Checkers\ExcludedCategories;
+use Modules\Coupon\Checkers\ExcludedProducts;
+use Modules\Coupon\Checkers\UsageLimitPerCoupon;
+use Modules\Coupon\Checkers\UsageLimitPerCustomer;
+use Modules\Coupon\Checkers\ValidCoupon;
 use Modules\Coupon\Entities\Coupon;
 use Modules\Payment\Facades\Gateway;
 use Modules\Setting\Entities\ShippingCompany;
 
 class CheckoutController extends Controller
 {
+
+    private $checkers = [
+        CouponExists::class,
+        //      TODO  AlreadyApplied::class,
+        ValidCoupon::class,
+        //        MinimumSpend::class,
+        //        MaximumSpend::class,
+        ApplicableProducts::class,
+        ExcludedProducts::class,
+        ApplicableCategories::class,
+        ExcludedCategories::class,
+        UsageLimitPerCoupon::class,
+        UsageLimitPerCustomer::class,
+    ];
 
     private $checkoutService;
 
@@ -55,20 +78,27 @@ class CheckoutController extends Controller
         $totalPrice = $prices['totalPrice'];
 
         if (isset($coupon->value) && $coupon->value->amount > $totalPrice) {
-            return response()->json('Bu kuponu şu an için kullanamazsınız!', 500);
+            return response()->json(['message' => 'Bu kuponu şu an için kullanamazsınız!'], 500);
         }
 
 
         if (isset($coupon->minimum_spend) && $coupon->minimum_spend->amount > $totalPrice) {
-            return response()->json('Bu kupon için minumum sepeti tutarı yeterli değil!', 500);
+            return response()->json(['message' => 'Bu kupon için minumum sepeti tutarı yeterli değil!'], 500);
         }
 
         if (isset($coupon->maximum_spend) && $coupon->maximum_spend->amount < $totalPrice) {
-            return response()->json('Bu kupon için maximum sepeti tutarını aştınız!', 500);
+            return response()->json(['message' => 'Bu kupon için maximum sepeti tutarını aştınız!'], 500);
         }
 
+        resolve(Pipeline::class)
+            ->send($coupon)
+            ->through($this->checkers)
+            ->then(function ($coupon) {
 
+            });
         return response()->json($coupon);
+
+
     }
 
     public function shippingsAndPaymentMethods()

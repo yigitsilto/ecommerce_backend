@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 use Modules\Address\Entities\Address;
 use Modules\Checkout\Services\OrderService;
 use Modules\Coupon\Entities\Coupon;
-use Modules\Support\Money;
 use Modules\User\Services\CustomerService;
 
 class CheckoutServiceImpl implements CheckoutService
@@ -51,6 +50,9 @@ class CheckoutServiceImpl implements CheckoutService
         try {
             DB::beginTransaction();
             $baskets = Basket::query()
+                             ->whereHas('product', function ($q) {
+                                 $q->where('is_active', 1);
+                             })
                              ->with('product')
                              ->where('user_id', $userId)
                              ->get();
@@ -67,7 +69,9 @@ class CheckoutServiceImpl implements CheckoutService
                         ->delete();
 
             if (!is_null($request->coupon_id)) {
-                $coupon = Coupon::query()->where('id', $request->coupon_id)->first();
+                $coupon = Coupon::query()
+                                ->where('id', $request->coupon_id)
+                                ->first();
                 $coupon->used++;
                 $coupon->save();
             }
@@ -142,12 +146,13 @@ class CheckoutServiceImpl implements CheckoutService
 
 
             $amount = 0;
-            if($coupon->is_percent){
+            if ($coupon->is_percent) {
 
-                $discountPercent = floatval(str_replace(',', '.', $coupon->value)) / 100; // Virgülle ayrılmış ondalık kısmı noktaya çeviriyoruz
+                $discountPercent = floatval(str_replace(',', '.',
+                                                        $coupon->value)) / 100; // Virgülle ayrılmış ondalık kısmı noktaya çeviriyoruz
                 $amount = $totalPrice * $discountPercent;
 
-            }else{
+            } else {
                 $amount = $coupon->value->amount;
             }
 

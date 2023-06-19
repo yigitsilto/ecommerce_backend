@@ -18,6 +18,9 @@ class ApplicableProducts
 
 
         $cartItems = Basket::query()
+                           ->whereHas('product', function ($q) {
+                               $q->where('is_active', 1);
+                           })
                            ->where('user_id', auth('api')->user()->id)
                            ->get()
                            ->filter(function ($cartItem) use ($coupon) {

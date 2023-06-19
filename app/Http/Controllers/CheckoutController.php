@@ -51,6 +51,25 @@ class CheckoutController extends Controller
             $customerService->register($request)->login();
         }
          */
+
+        if (!is_null($request->coupon_id)) {
+
+            $coupon = Coupon::query()
+                            ->find($request->coupon_id);
+
+            if (!$coupon->is_active){
+                return response()->json(['message' => 'Bu kuponu şu an için kullanamazsınız!'], 500);
+            }
+
+            resolve(Pipeline::class)
+                ->send($coupon)
+                ->through($this->checkers)
+                ->then(function ($coupon) {
+                    return $coupon;
+                });
+        }
+
+
         $order = $this->checkoutService->store($request);
 
         return response()->json($order);
@@ -72,6 +91,10 @@ class CheckoutController extends Controller
         $coupon = Coupon::query()
                         ->where('code', $request->code)
                         ->first();
+
+        if (!$coupon->is_active){
+            return response()->json(['message' => 'Bu kuponu şu an için kullanamazsınız!'], 500);
+        }
 
 
         $prices = $this->checkoutService->calculateTotalPriceInBasket();

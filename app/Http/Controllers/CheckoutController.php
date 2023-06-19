@@ -17,10 +17,12 @@ use Modules\Coupon\Checkers\ValidCoupon;
 use Modules\Coupon\Entities\Coupon;
 use Modules\Payment\Facades\Gateway;
 use Modules\Setting\Entities\ShippingCompany;
+use Modules\Support\Money;
 
 class CheckoutController extends Controller
 {
 
+    // TODO success olduğunda ödeme kuponun used değerini yükselt
     private $checkers = [
         CouponExists::class,
         //      TODO  AlreadyApplied::class,
@@ -95,9 +97,24 @@ class CheckoutController extends Controller
         $prices = $this->checkoutService->calculateTotalPriceInBasket();
         $totalPrice = $prices['totalPrice'];
 
-        if (isset($coupon->value) && $coupon->value->amount > $totalPrice) {
-            return response()->json(['message' => 'Bu kuponu şu an için kullanamazsınız!'], 500);
+        $amount = 0;
+        if($coupon->is_percent){
+
+            $discountPercent = floatval(str_replace(',', '.', $coupon->value)) / 100; // Virgülle ayrılmış ondalık kısmı noktaya çeviriyoruz
+            $amount = $totalPrice * $discountPercent;
+            $totalPrice -= $amount;
+
+            $coupon->value = Money::inCurrentCurrency($amount);
+
+        }else{
+            $amount = $coupon->value->amount;
+
+            if (isset($coupon->value) && $amount > $totalPrice) {
+                return response()->json(['message' => 'Bu kuponu şu an için kullanamazsınız!'], 500);
+            }
         }
+
+
 
 
         if (isset($coupon->minimum_spend) && $coupon->minimum_spend->amount > $totalPrice) {

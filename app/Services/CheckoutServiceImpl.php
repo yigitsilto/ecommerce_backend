@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Modules\Address\Entities\Address;
 use Modules\Checkout\Services\OrderService;
 use Modules\Coupon\Entities\Coupon;
+use Modules\Support\Money;
 use Modules\User\Services\CustomerService;
 
 class CheckoutServiceImpl implements CheckoutService
@@ -64,6 +65,13 @@ class CheckoutServiceImpl implements CheckoutService
             OrderSnaphot::query()
                         ->where('user_id', $userId)
                         ->delete();
+
+            if (!is_null($request->coupon_id)) {
+                $coupon = Coupon::query()->where('id', $request->coupon_id)->first();
+                $coupon->used++;
+                $coupon->save();
+            }
+
             DB::commit();
             return $order;
         } catch (Exception $e) {
@@ -131,7 +139,20 @@ class CheckoutServiceImpl implements CheckoutService
         if (!is_null($request->coupon_id)) {
             $coupon = Coupon::query()
                             ->find($request->coupon_id);
-            $discount = $coupon->value->amount;
+
+
+            $amount = 0;
+            if($coupon->is_percent){
+
+                $discountPercent = floatval(str_replace(',', '.', $coupon->value)) / 100; // Virgülle ayrılmış ondalık kısmı noktaya çeviriyoruz
+                $amount = $totalPrice * $discountPercent;
+
+            }else{
+                $amount = $coupon->value->amount;
+            }
+
+
+            $discount = $amount;
             $totalPrice -= $discount;
         }
 

@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('login', 'AuthController@getLogin')->name('login');
+Route::get('login', function (){
+    return \Illuminate\Support\Facades\Redirect::to('admin/login');
+})->name('login');
 Route::post('login', 'AuthController@postLogin')->name('login.post');
 
 Route::get('login/{provider}', 'AuthController@redirectToProvider')->name('login.redirect');

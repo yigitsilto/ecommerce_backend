@@ -68,12 +68,15 @@ class SettingsController extends Controller
                     'twitter' => setting('storefront_twitter_link'),
                     'instagram' => setting('storefront_instagram_link'),
                     'youtube' => setting('storefront_youtube_link'),
+                    'footer1Title' => setting('storefront_footer_menu_one_title'),
+                    'footer2Title' => setting('storefront_footer_menu_two_title'),
                     'primaryMenu' => $this->getPrimaryMenu(),
                     'categoryMenu' => $this->getCategoryMenu(),
                     'footer1' => $this->getFooterMenuOne(),
                     'footer2' => $this->getFooterMenuTwo(),
                     'pages' => Page::query()
                                    ->get(),
+
                 ],
             ];
             Redis::set('settings', json_encode($settings));

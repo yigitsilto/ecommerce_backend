@@ -60,6 +60,7 @@ class LayoutComposer
             'copyrightText' => $this->getCopyrightText(),
             'acceptedPaymentMethodsImage' => $this->getAcceptedPaymentMethodsImage(),
             'schemaMarkup' => $this->getSchemaMarkup(),
+
         ]);
     }
 

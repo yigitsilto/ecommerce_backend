@@ -22,13 +22,17 @@ class RegisterRequest extends Request
     {
         return [
 
-            'email' => ['required', 'email', 'unique:users'],
-                        'password' => ['required'],
-//            'first_name' => ['required'],
-//            'last_name' => ['required'],
-//            'phone' => ['required'],
-//            'captcha' => ['required', 'captcha'],
-//            'privacy_policy' => ['accepted'],
+            'email' => [
+                'required',
+                'email',
+                'unique:users'
+            ],
+            'password' => ['required'],
+            //            'first_name' => ['required'],
+            //            'last_name' => ['required'],
+            //            'phone' => ['required'],
+            //            'captcha' => ['required', 'captcha'],
+            //            'privacy_policy' => ['accepted'],
         ];
     }
 }

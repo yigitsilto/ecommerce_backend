@@ -611,6 +611,18 @@ class SettingsController extends Controller
                     $specValue = $item->option->variantValue->__toString(); // Kırmızı
 
                     if ($this->productChanged) {
+
+                        $filter = Filter::query()
+                                        ->firstOrCreate([
+                                                            'slug' => $this->toSlug($specName)
+                                                        ],
+                                                        [
+                                                            'slug' => $this->toSlug($specName),
+                                                            'title' => $specName,
+                                                            'status' => 1,
+                                                        ]
+                                        );
+
                         $option = Option::query()
                                         ->create(
                                             [
@@ -658,6 +670,30 @@ class SettingsController extends Controller
                                          'product_id' => $productId,
                                          'option_id' => $optionId
                                      ]);
+
+                    $filterValue = FilterValue::query()
+                                              ->updateOrCreate([
+                                                                   'filter_id' => $filter->id,
+                                                                   'slug' => $this->toSlug($specValue),
+                                                               ],
+                                                               [
+                                                                   'filter_id' => $filter->id,
+                                                                   'title' => $specValue,
+                                                                   'slug' => $this->toSlug($specValue),
+                                                               ]);
+
+                    ProductFilterValue::query()
+                                      ->firstOrCreate([
+                                                          'product_id' => $productId,
+                                                          'filter_value_id' => $filterValue->id,
+                                                          'filter_id' => $filter->id,
+                                                      ],
+
+                                                      [
+                                                          'product_id' => $productId,
+                                                          'filter_value_id' => $filterValue->id,
+                                                          'filter_id' => $filter->id,
+                                                      ]);
 
                 }
 

@@ -22,6 +22,10 @@ use Modules\Slider\Entities\Slider;
 Route::get('import-kore',[\FleetCart\Http\Controllers\SettingsController::class,'importKore']);
 /** Product import end */
 
+Route::post('forgot-password', [\Modules\User\Http\Controllers\AuthController::class, 'postReset'])->name("forgot");
+Route::post('password/reset/{email}/{code}', [\Modules\User\Http\Controllers\AuthController::class, 'postResetComplete'])->name("forgot");
+
+
 
 /** Product Controller */
 Route::resource('filters', \FleetCart\Http\Controllers\FiltersController::class)->only('index');

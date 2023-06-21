@@ -146,16 +146,18 @@ abstract class BaseAuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (is_null($user)) {
-            return back()->withInput()
-                ->withError(trans('user::messages.users.no_user_found'));
+            return response()->json(['error' => 'Böyle bir kullanıcı bulunamadı'],404);
         }
 
         $code = $this->auth->createReminderCode($user);
 
-        Mail::to($user)
-            ->send(new ResetPasswordEmail($user, $this->resetCompleteRoute($user, $code)));
 
-        return back()->withSuccess(trans('user::messages.users.check_email_to_reset_password'));
+        $url = env('FE_URL') . "login/password/reset-password/$user->email/$code";
+
+        Mail::to($user)
+            ->send(new ResetPasswordEmail($user, $url));
+
+        return response()->json(['success' => 'Başarılı'],200);
     }
 
     /**
@@ -220,11 +222,9 @@ abstract class BaseAuthController extends Controller
         $completed = $this->auth->completeResetPassword($user, $code, $request->new_password);
 
         if (! $completed) {
-            return back()->withInput()
-                ->withError(trans('user::messages.users.invalid_reset_code'));
+            return response()->json(['error' => 'Bir hata oluştu'],404);
         }
 
-        return redirect($this->loginUrl())
-            ->withSuccess(trans('user::messages.users.password_has_been_reset'));
+        return response()->json(['success' => 'Başarılı'],200);
     }
 }

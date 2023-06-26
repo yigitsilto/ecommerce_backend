@@ -12,6 +12,7 @@
     <meta property="og:description" content="{{ $product->meta->meta_description ?: $product->short_description }}">
     <meta property="og:image" content="{{ $product->base_image->path }}">
     <meta property="og:locale" content="{{ locale() }}">
+    <meta name="robots" content="noindex">
 
     @foreach (supported_locale_keys() as $code)
         <meta property="og:locale:alternate" content="{{ $code }}">

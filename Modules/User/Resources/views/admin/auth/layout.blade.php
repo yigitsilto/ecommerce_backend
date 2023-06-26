@@ -3,6 +3,8 @@
     <head>
         <base href="{{ url('/') }}">
         <meta charset="UTF-8">
+        <meta name="robots" content="noindex">
+
 
         <title>
             @yield('title') - {{setting('store_name')}}

@@ -2,6 +2,8 @@
 <html lang="{{ locale() }}">
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex">
+
 
     <title>{{ trans('media::media.file_manager.title') }}</title>
 

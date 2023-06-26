@@ -3,6 +3,7 @@
 @section('title', $page->name)
 
 @push('meta')
+
     <meta name="title" content="{{ $page->meta->meta_title ?: $page->name }}">
     <meta name="description" content="{{ $page->meta->meta_description }}">
     <meta name="twitter:card" content="summary">
@@ -11,6 +12,7 @@
     <meta property="og:description" content="{{ $page->meta->meta_description }}">
     <meta property="og:image" content="{{ $logo }}">
     <meta property="og:locale" content="{{ locale() }}">
+    <meta name="robots" content="noindex">
 
     @foreach (supported_locale_keys() as $code)
         <meta property="og:locale:alternate" content="{{ $code }}">

@@ -7,6 +7,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet">
+        <meta name="robots" content="noindex">
+
     </head>
 
     <body dir="rtl" style="font-family: 'Open Sans', sans-serif;

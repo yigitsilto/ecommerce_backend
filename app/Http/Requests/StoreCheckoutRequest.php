@@ -41,7 +41,7 @@ class StoreCheckoutRequest extends FormRequest
             'shipping.country' => ['required_if:ship_to_a_different_address,1'],
             'shipping.state' => 'required_if:ship_to_a_different_address,1',
              */
-            'payment_method' => ['required',Rule::in(['bank_transfer', 'credit_cart'])],
+            'payment_method' => ['required',Rule::in(['bank_transfer', 'credit_cart', 'param'])],
             'shipping_method' => ['required_if:free_shipping,1'],
             'coupon' => ['nullable']
             //'terms_and_conditions' => 'accepted',

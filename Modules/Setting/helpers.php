@@ -14,8 +14,6 @@ if (!function_exists('setting')) {
     {
 
 
-//
-
         // TODO buraya bakılacak bütün veriler redise eklenmeli oradan çekilmeli yoksa tenant yapıda sıkıntı olabilir
         if (is_null($key)) {
 

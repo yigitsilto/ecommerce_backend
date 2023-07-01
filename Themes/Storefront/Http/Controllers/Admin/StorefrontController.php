@@ -41,7 +41,6 @@ class StorefrontController
     {
         $this->redisUpdate();
         setting($request->except('_token', '_method'));
-
         try {
             StoreFrontSetting::where('id', '>', 0)->delete();
             foreach (setting()->all() as $keyForSettings => $value) {

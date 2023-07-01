@@ -5,8 +5,11 @@ namespace Themes\Storefront\Http\Controllers\Admin;
 use FleetCart\Helpers\RedisHelper;
 use FleetCart\StoreFrontSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 use Modules\Admin\Ui\Facades\TabManager;
+use Modules\Media\Entities\File;
+use Modules\Product\Entities\EntityFiles;
 use Themes\Storefront\Banner;
 use Themes\Storefront\Http\Requests\SaveStorefrontRequest;
 
@@ -54,11 +57,31 @@ class StorefrontController
                 );
 
             }
+
+            $logo = $this->getMedia(setting('storefront_header_logo'))->path;
+            $favicon = $this->getMedia(setting('storefront_favicon'))->path;
+
+            StoreFrontSetting::query()->where('key', 'storefront_header_logo')->update([
+                'value' => $logo,
+                'is_foreign_id' => false
+            ]);
+            StoreFrontSetting::query()->where('key', 'storefront_favicon')->update([
+                'value' => $favicon,
+                'is_foreign_id' => false
+            ]);
+
         } catch (\Exception $e) {
 
         }
 
         return back()->withSuccess(trans('admin::messages.resource_saved', ['resource' => trans('setting::settings.settings')]));
+    }
+
+    private function getMedia($fileId)
+    {
+        return Cache::rememberForever(md5("files.{$fileId}"), function () use ($fileId) {
+            return File::findOrNew($fileId);
+        });
     }
 
     public function delete(Request  $request){

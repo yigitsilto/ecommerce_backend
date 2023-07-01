@@ -22,7 +22,15 @@ class StorefrontController
      */
     public function edit()
     {
-        $settings = setting()->all();
+//        $settings = setting()->all();
+        $settingsAll = StoreFrontSetting::all();
+
+        $settings = [];
+        foreach ($settingsAll as $item) {
+            $settings[$item->key] = $item->value;
+        }
+
+
         $tabs = TabManager::get('storefront');
 
         return view('admin.storefront.edit', compact('settings', 'tabs'));
@@ -41,9 +49,19 @@ class StorefrontController
     {
         $this->redisUpdate();
         setting($request->except('_token', '_method'));
+        $requestAll = $request->except('_token', '_method');
+        foreach ($requestAll['translatable'] as $key => $req) {
+            $requestAll = $request->merge([$key => is_array($req) ? json_encode($req) : $req]);
+        }
+
+        $requestAll = $requestAll->except('_token', '_method');
+        $forEachKey = $requestAll;
+        if (StoreFrontSetting::all()->count() < 1) {
+            $forEachKey = setting()->all();
+        }
         try {
             StoreFrontSetting::where('id', '>', 0)->delete();
-            foreach (setting()->all() as $keyForSettings => $value) {
+            foreach ($forEachKey as $keyForSettings => $value) {
                 // save the StorFront settings to table
                 $valueForCreate = is_array($value) ? json_encode($value) : $value;
                 $isForeignId = is_numeric($value) && $value != "0" ? true : false;

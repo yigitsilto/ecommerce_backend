@@ -35,8 +35,8 @@ class StorefrontTabs extends Tabs
            // ->add($this->productPage())
             ->add($this->socialLinks());
 
-        $this->group('home_page_sections', trans('storefront::storefront.tabs.group.home_page_sections'))
-            ->add($this->sliderBanners());
+//        $this->group('home_page_sections', trans('storefront::storefront.tabs.group.home_page_sections'));
+//            ->add($this->sliderBanners());
            /*
             *  ->add($this->threeColumnFullWidthBanners())
             ->add($this->featuredCategories())

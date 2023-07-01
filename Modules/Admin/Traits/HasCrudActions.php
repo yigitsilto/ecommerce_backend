@@ -429,6 +429,7 @@ trait HasCrudActions
     public function update($id)
     {
 
+
         $entity = $this->getEntity($id);
 
         $request = $this->getRequest('update');

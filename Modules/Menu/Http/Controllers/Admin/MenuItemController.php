@@ -5,8 +5,10 @@ namespace Modules\Menu\Http\Controllers\Admin;
 use FleetCart\Helpers\RedisHelper;
 use Illuminate\Support\Facades\Redis;
 use Modules\Admin\Ui\Facades\TabManager;
+use Modules\Category\Entities\Category;
 use Modules\Menu\Entities\MenuItem;
 use Modules\Menu\Http\Requests\SaveMenuItemRequest;
+use Modules\Page\Entities\Page;
 
 class MenuItemController
 {
@@ -20,6 +22,7 @@ class MenuItemController
     public function store($menuId, SaveMenuItemRequest $request)
     {
 
+        dd($request->all());
         RedisHelper::redisClear();
         $menuItem = MenuItem::create(
             $this->prepare($menuId, $request->all())
@@ -99,6 +102,15 @@ class MenuItemController
      */
     public function update($menuId, $id, SaveMenuItemRequest $request)
     {
+        if ($request->get("type") == "category") {
+            $cat = Category::query()->find($request->get("category_id"));
+            $request->merge(["url" => $cat->slug]);
+
+        }elseif ($request->get("type") == "page") {
+            $page = Page::query()->find($request->get("page_id"));
+            $request->merge(["url" => $page->slug]);
+        }
+
         RedisHelper::redisClear();
         MenuItem::withoutGlobalScope('active')
                 ->findOrFail($id)

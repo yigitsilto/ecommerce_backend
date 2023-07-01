@@ -78,7 +78,7 @@ class App
                 'razorpay_description' => 'Pay securely by Credit or Debit card or Internet Banking through Razorpay.',
                 'instamojo_label' => 'Instamojo',
                 'instamojo_description' => 'CC/DB/NB/Wallets',
-                'cod_label' => 'Cash On Delivery',
+                'cod_label' => 'Param Pos',
                 'cod_description' => 'Pay with cash upon delivery.',
                 'bank_transfer_label' => 'Bank Transfer',
                 'bank_transfer_description' => 'Make your payment directly into our bank account. Please use your Order ID as the payment reference.',

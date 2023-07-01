@@ -3,6 +3,7 @@
 namespace Modules\Payment\Providers;
 
 use Modules\Payment\Gateways\COD;
+use Modules\Payment\Gateways\Param;
 use Modules\Payment\Gateways\Paytm;
 use Modules\Payment\Facades\Gateway;
 use Modules\Payment\Gateways\PayPal;
@@ -34,6 +35,7 @@ class PaymentServiceProvider extends ServiceProvider
         $this->registerCashOnDelivery();
         $this->registerBankTransfer();
         $this->registerCheckPayment();
+        $this->registerParamPos();
     }
 
     private function enabled($paymentMethod)
@@ -84,6 +86,13 @@ class PaymentServiceProvider extends ServiceProvider
     {
         if ($this->enabled('cod')) {
             Gateway::register('cod', new COD);
+        }
+    }
+
+    private function registerParamPos()
+    {
+        if ($this->enabled('param')) {
+            Gateway::register('param', new Param);
         }
     }
 

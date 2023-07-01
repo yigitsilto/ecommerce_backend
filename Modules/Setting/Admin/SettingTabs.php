@@ -51,6 +51,7 @@ class SettingTabs extends Tabs
 //            ->add($this->razorpay())
 //            ->add($this->instamojo())
 //            ->add($this->cod())
+            ->add($this->paramPos())
             ->add($this->bankTransfer());
 //            ->add($this->checkPayment());
 
@@ -394,6 +395,21 @@ class SettingTabs extends Tabs
             ]);
 
             $tab->view('setting::admin.settings.tabs.cod');
+        });
+    }
+
+    private function paramPos()
+    {
+        return tap(new Tab('param_pos', 'Param Pos'), function (Tab $tab) {
+            $tab->weight(65);
+
+            $tab->fields([
+                             'param_enabled',
+                             'translatable.param_label',
+                             'translatable.param_description',
+                         ]);
+
+            $tab->view('setting::admin.settings.tabs.param');
         });
     }
 

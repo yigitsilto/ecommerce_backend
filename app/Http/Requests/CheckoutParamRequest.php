@@ -44,7 +44,7 @@ class CheckoutParamRequest extends FormRequest
             'address' => ['required', 'exists:addresses,id'],
             'coupon_id' => ['nullable','exists:coupons,id'],
             'free_shipping' => ['required','boolean'],
-            'payment_method' => ['required',Rule::in(['bank_transfer', 'credit_cart'])],
+            'payment_method' => ['required',Rule::in(['bank_transfer', 'credit_cart', 'param'])],
             'shipping_method' => ['required_if:free_shipping,1'],
             'coupon' => ['nullable']
         ];

@@ -254,7 +254,8 @@ XML;
                 'required',
                 Rule::in([
                              'bank_transfer',
-                             'credit_cart'
+                             'credit_cart',
+                             'param'
                          ])
             ],
             'shipping_method' => ['required_if:free_shipping,1'],

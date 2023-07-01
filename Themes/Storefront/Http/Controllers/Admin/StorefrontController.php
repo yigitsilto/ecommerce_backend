@@ -56,9 +56,7 @@ class StorefrontController
 
         $requestAll = $requestAll->except('_token', '_method');
         $forEachKey = $requestAll;
-        if (StoreFrontSetting::all()->count() < 1) {
-            $forEachKey = setting()->all();
-        }
+
         try {
             StoreFrontSetting::where('id', '>', 0)->delete();
             foreach ($forEachKey as $keyForSettings => $value) {

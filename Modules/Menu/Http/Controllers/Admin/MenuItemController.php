@@ -22,7 +22,6 @@ class MenuItemController
     public function store($menuId, SaveMenuItemRequest $request)
     {
 
-        dd($request->all());
         RedisHelper::redisClear();
         $menuItem = MenuItem::create(
             $this->prepare($menuId, $request->all())

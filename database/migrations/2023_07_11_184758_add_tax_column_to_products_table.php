@@ -14,7 +14,7 @@ class AddTaxColumnToProductsTable extends Migration
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->addColumn("integer", "tax")->nullable();
+            $table->decimal('tax', 8, 4)->unsigned();
         });
 
         Schema::table('tax_classes', function (Blueprint $table) {

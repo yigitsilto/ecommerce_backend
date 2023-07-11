@@ -65,6 +65,7 @@ class Product extends Model
         'new_to',
         'is_popular',
         'short_desc',
+        'tax'
     ];
 
     /**
@@ -401,8 +402,16 @@ class Product extends Model
     public function getPriceAttribute($price)
     {
         $productPrice = $this->getPriceForUserSpecial($price);
+        $taxRate = $this->tax;
+
+        if ($taxRate != null) {
+            $taxCalculation = $productPrice * ($taxRate / 100);
+            $productPrice = $productPrice + $taxCalculation;
+        }
+
         return Money::inDefaultCurrency($productPrice);
     }
+
 
     private function getPriceForUserSpecial($price)
     {

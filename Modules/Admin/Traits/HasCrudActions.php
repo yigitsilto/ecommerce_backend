@@ -14,6 +14,7 @@ use Modules\Product\Entities\Product;
 use Modules\Product\Entities\ProductPrice;
 use Modules\Product\Http\Requests\SaveProductRequest;
 use Modules\Support\Search\Searchable;
+use Modules\Tax\Entities\TaxRate;
 
 trait HasCrudActions
 {
@@ -65,6 +66,8 @@ trait HasCrudActions
 
         $request = $this->getRequest('store');
 
+        dd($request->all());
+
         if ($request instanceof SaveProductRequest) {
 
 
@@ -77,7 +80,7 @@ trait HasCrudActions
 
         $entity = $this->getModel()
                        ->create(
-                          $request->all()
+                           $request->all()
                        );
 
         if ($entity instanceof Product) {
@@ -97,6 +100,10 @@ trait HasCrudActions
                                     'company_price_id' => $index
                                 ]);
             }
+
+            Product::query()
+                   ->where('id', $entity->id)
+                   ->update(['tax' => 20]);
 
         }
 
@@ -224,84 +231,99 @@ trait HasCrudActions
     }
 
     /**
-     * Make the given model instance searchable.
-     *
-     * @return void
-     */
-    protected function searchable($entity)
-    {
-        if ($this->isSearchable($entity)) {
-            $entity->searchable();
-        }
-    }
-
-    /**
-     * @param $arrayValues
-     * @param $entityAfterSaved
-     * @return void
-     * Filtre değerlerine göre kayıt oluşturur.
-     */
-    private function createFilterValues($arrayValues, $entityAfterSaved)
-    {
-
-        foreach ($arrayValues as $value) {
-            $filterValue = FilterValue::query()
-                                      ->where('id', $value)
-                                      ->first();
-
-            ProductFilterValue::query()
-                              ->firstOrCreate([
-                                                  'filter_id' => $filterValue->filter_id,
-                                                  'filter_value_id' => $filterValue->id,
-                                                  'product_id' => $entityAfterSaved->id
-                                              ],
-                                              [
-                                                  'filter_id' => $filterValue->filter_id,
-                                                  'filter_value_id' => $filterValue->id,
-                                                  'product_id' => $entityAfterSaved->id
-                                              ]);
-        }
-    }
-
-    /**
-     * Get route prefix of the resource.
-     *
-     * @return string
-     */
-    protected function getRoutePrefix()
-    {
-        if (isset($this->routePrefix)) {
-            return $this->routePrefix;
-        }
-
-        return "admin.{$this->getModel()->getTable()}";
-    }
-
-    /**
-     * Get label of the resource.
-     *
-     * @return void
-     */
-    protected function getLabel()
-    {
-        return trans($this->label);
-    }
-
-    /**
-     * Display the specified resource.
+     * Update the specified resource in storage.
      *
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function update($id)
     {
+
+
         $entity = $this->getEntity($id);
 
-        if (request()->wantsJson()) {
-            return $entity;
+        $request = $this->getRequest('update');
+
+
+        if ($entity instanceof Product) {
+
+            $request = $this->getRequest('update')
+                            ->merge([
+                                        'price' => $this->getRequest('update')
+                                                        ->all()['prices'][1]
+                                    ]);
+
+
+            foreach ($request->all()['prices'] as $index => $price) {
+
+                $formattedNumber = number_format((float)$price, 4, '.', '');
+
+                ProductPrice::query()
+                            ->updateOrCreate(
+                                [
+                                    'product_id' => $id,
+                                    'company_price_id' => $index,
+                                ],
+                                [
+                                    'product_id' => $id,
+                                    'price' => $price,
+                                    'company_price_id' => $index
+                                ]);
+            }
+
+
         }
 
-        return view("{$this->viewPath}.show")->with($this->getResourceName(), $entity);
+        $this->disableSearchSyncing();
+
+        $entity->update(
+            $request->all()
+        );
+
+
+        if ($entity instanceof Product) {
+
+
+            if ($request->has('tax_class_id') && !is_null($request->get('tax_class_id'))){
+
+                $taxRate = TaxRate::query()
+                                  ->where('tax_class_id', $request->get("tax_class_id"))
+                                  ->first();
+                if ($taxRate) {
+                    Product::query()->where('id', $entity->id)
+                           ->update(['tax' => $taxRate->rate]);
+                }
+            }
+
+
+            $data = $this->getRequest('update')
+                         ->all();
+
+            $entityAfterSaved = $this->getEntity($id);
+
+            $this->insertOptionValueImage($entityAfterSaved, $data);
+            if (isset($data['filter_values'])) {
+                $this->createFilterValues($data['filter_values'], $entityAfterSaved);
+
+            }
+
+
+        }
+
+
+        $this->searchable($entity);
+
+        RedisHelper::redisClear();
+
+        if (method_exists($this, 'redirectTo')) {
+            return $this->redirectTo($entity)
+                        ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
+        }
+
+
+        return redirect()
+            ->route("{$this->getRoutePrefix()}.index")
+            ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
     }
 
     /**
@@ -334,37 +356,6 @@ trait HasCrudActions
                 ];
             })
             ->all();
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $data = array_merge([
-                                'tabs' => TabManager::get($this->getModel()
-                                                               ->getTable()),
-                                $this->getResourceName() => $this->getEntity($id),
-                            ], $this->getFormData('edit', $id));
-
-        return view("{$this->viewPath}.edit", $data);
-    }
-
-    /**
-     * Destroy resources by given ids.
-     *
-     * @param string $ids
-     * @return void
-     */
-    public function destroy($ids)
-    {
-        $this->getModel()
-             ->withoutGlobalScope('active')
-             ->whereIn('id', explode(',', $ids))
-             ->delete();
     }
 
     /**
@@ -421,82 +412,114 @@ trait HasCrudActions
     }
 
     /**
-     * Update the specified resource in storage.
+     * @param $arrayValues
+     * @param $entityAfterSaved
+     * @return void
+     * Filtre değerlerine göre kayıt oluşturur.
+     */
+    private function createFilterValues($arrayValues, $entityAfterSaved)
+    {
+
+        foreach ($arrayValues as $value) {
+            $filterValue = FilterValue::query()
+                                      ->where('id', $value)
+                                      ->first();
+
+            ProductFilterValue::query()
+                              ->firstOrCreate([
+                                                  'filter_id' => $filterValue->filter_id,
+                                                  'filter_value_id' => $filterValue->id,
+                                                  'product_id' => $entityAfterSaved->id
+                                              ],
+                                              [
+                                                  'filter_id' => $filterValue->filter_id,
+                                                  'filter_value_id' => $filterValue->id,
+                                                  'product_id' => $entityAfterSaved->id
+                                              ]);
+        }
+    }
+
+    /**
+     * Make the given model instance searchable.
+     *
+     * @return void
+     */
+    protected function searchable($entity)
+    {
+        if ($this->isSearchable($entity)) {
+            $entity->searchable();
+        }
+    }
+
+    /**
+     * Get label of the resource.
+     *
+     * @return void
+     */
+    protected function getLabel()
+    {
+        return trans($this->label);
+    }
+
+    /**
+     * Get route prefix of the resource.
+     *
+     * @return string
+     */
+    protected function getRoutePrefix()
+    {
+        if (isset($this->routePrefix)) {
+            return $this->routePrefix;
+        }
+
+        return "admin.{$this->getModel()->getTable()}";
+    }
+
+    /**
+     * Display the specified resource.
      *
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function update($id)
+    public function show($id)
     {
-
-
         $entity = $this->getEntity($id);
 
-        $request = $this->getRequest('update');
-
-        if ($entity instanceof Product) {
-
-            $request = $this->getRequest('update')
-                            ->merge([
-                                        'price' => $this->getRequest('update')
-                                                        ->all()['prices'][1]
-                                    ]);
-
-
-            foreach ($request->all()['prices'] as $index => $price) {
-
-                $formattedNumber = number_format((float)$price, 4, '.', '');
-
-                ProductPrice::query()
-                            ->updateOrCreate(
-                                [
-                                    'product_id' => $id,
-                                    'company_price_id' => $index,
-                                ],
-                                [
-                                    'product_id' => $id,
-                                    'price' => $price,
-                                    'company_price_id' => $index
-                                ]);
-            }
-
-
+        if (request()->wantsJson()) {
+            return $entity;
         }
 
-        $this->disableSearchSyncing();
+        return view("{$this->viewPath}.show")->with($this->getResourceName(), $entity);
+    }
 
-        $entity->update(
-            $request->all()
-        );
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $data = array_merge([
+                                'tabs' => TabManager::get($this->getModel()
+                                                               ->getTable()),
+                                $this->getResourceName() => $this->getEntity($id),
+                            ], $this->getFormData('edit', $id));
 
+        return view("{$this->viewPath}.edit", $data);
+    }
 
-        if ($entity instanceof Product) {
-            $data = $this->getRequest('update')
-                         ->all();
-
-            $entityAfterSaved = $this->getEntity($id);
-
-            $this->insertOptionValueImage($entityAfterSaved, $data);
-            if (isset($data['filter_values'])) {
-                $this->createFilterValues($data['filter_values'], $entityAfterSaved);
-
-            }
-
-        }
-
-
-        $this->searchable($entity);
-
-        RedisHelper::redisClear();
-
-        if (method_exists($this, 'redirectTo')) {
-            return $this->redirectTo($entity)
-                        ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
-        }
-
-
-        return redirect()
-            ->route("{$this->getRoutePrefix()}.index")
-            ->withSuccess(trans('admin::messages.resource_saved', ['resource' => $this->getLabel()]));
+    /**
+     * Destroy resources by given ids.
+     *
+     * @param string $ids
+     * @return void
+     */
+    public function destroy($ids)
+    {
+        $this->getModel()
+             ->withoutGlobalScope('active')
+             ->whereIn('id', explode(',', $ids))
+             ->delete();
     }
 }

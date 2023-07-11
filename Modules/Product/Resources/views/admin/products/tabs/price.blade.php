@@ -9,7 +9,7 @@
         @foreach($companyPrices as $index => $item)
             @if($index == 0)
                 <label for="{{$index}}">{{$item->title}} <span style="color: red"> *</span> </label>
-                <input id="{{$index}}" type="number" class="form-control" name="prices[{{$item->id}}]" value="{{$product->price}}" required>
+                <input id="{{$index}}" type="number" class="form-control" name="prices[{{$item->id}}]" value="{{$product->productPrices[0]->price}}" required>
                 @else
 
                 <label for="{{$index}}">{{$item->title}}</label>

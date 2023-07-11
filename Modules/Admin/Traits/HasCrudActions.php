@@ -66,7 +66,7 @@ trait HasCrudActions
 
         $request = $this->getRequest('store');
 
-        dd($request->all());
+
 
         if ($request instanceof SaveProductRequest) {
 
@@ -84,6 +84,18 @@ trait HasCrudActions
                        );
 
         if ($entity instanceof Product) {
+
+            if ($request->has('tax_class_id') && !is_null($request->get('tax_class_id'))){
+
+                $taxRate = TaxRate::query()
+                                  ->where('tax_class_id', $request->get("tax_class_id"))
+                                  ->first();
+                if ($taxRate) {
+                    Product::query()->where('id', $entity->id)
+                           ->update(['tax' => $taxRate->rate]);
+                }
+            }
+
 
             foreach ($request->all()['prices'] as $index => $price) {
 

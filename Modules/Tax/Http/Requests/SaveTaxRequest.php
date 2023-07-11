@@ -24,7 +24,7 @@ class SaveTaxRequest extends Request
     {
         return [
             'label' => 'required',
-            'based_on' => ['required', Rule::in([TaxClass::SHIPPING_ADDRESS, TaxClass::BILLING_ADDRESS, TaxClass::STORE_ADDRESS])],
+//            'based_on' => ['required', Rule::in([TaxClass::SHIPPING_ADDRESS, TaxClass::BILLING_ADDRESS, TaxClass::STORE_ADDRESS])],
             'rates.*.name' => 'required_with:rates.*.rate',
             'rates.*.rate' => ['required_with:rates.*.name', 'numeric', 'min:0', 'max:9999'],
         ];

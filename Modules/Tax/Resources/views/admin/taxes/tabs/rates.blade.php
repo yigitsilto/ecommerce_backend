@@ -5,12 +5,7 @@
                 <tr>
                     <th></th>
                     <th>{{ trans('tax::attributes.name') }}</th>
-                    <th>{{ trans('tax::attributes.country') }}</th>
-                    <th class="state">{{ trans('tax::attributes.state') }}</th>
-                    <th class="city">{{ trans('tax::attributes.city') }}</th>
-                    <th class="zip">{{ trans('tax::attributes.zip') }}</th>
                     <th class="rate">{{ trans('tax::attributes.rate') }}</th>
-                    <th></th>
                 </tr>
             </thead>
 
@@ -20,9 +15,9 @@
         </table>
     </div>
 
-    <button type="button" class="btn btn-default m-b-15" id="add-new-rate">
-        {{ trans('tax::taxes.form.add_new_rate') }}
-    </button>
+{{--    <button type="button" class="btn btn-default m-b-15" id="add-new-rate">--}}
+{{--        {{ trans('tax::taxes.form.add_new_rate') }}--}}
+{{--    </button>--}}
 </div>
 
 @include('tax::admin.taxes.tabs.templates.rate')

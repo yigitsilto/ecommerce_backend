@@ -86,13 +86,14 @@ class ProductTabs extends Tabs
                              'price',
                              'special_price',
                              'special_price_type',
+                             'special_price_no_tax',
                              //                'special_price_start',
                              //                'special_price_end',
                          ]);
 
             $tab->view('product::admin.products.tabs.price', [
                 'companyPrices' => CompanyPrice::query()
-                                               ->get()
+                                               ->get(),
             ]);
         });
     }

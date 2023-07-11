@@ -65,7 +65,7 @@ class Product extends Model
         'new_to',
         'is_popular',
         'short_desc',
-        'tax'
+        'tax',
     ];
 
     /**
@@ -109,6 +109,7 @@ class Product extends Model
         'has_percentage_special_price',
         'special_price_percent',
         'normalPrice',
+        'special_price_no_tax',
     ];
 
     /**
@@ -308,6 +309,8 @@ class Product extends Model
             $specialPrice = 0;
         }
 
+
+
         return Money::inDefaultCurrency($specialPrice);
     }
 
@@ -464,9 +467,22 @@ class Product extends Model
         return $price;
     }
 
+    public function getSpecialPriceNoTaxAttribute()
+    {
+        $specialPrice = $this->attributes['special_price'];
+        if (!is_null($specialPrice)) {
+            return Money::inDefaultCurrency($specialPrice);
+        }
+    }
     public function getSpecialPriceAttribute($specialPrice)
     {
         if (!is_null($specialPrice)) {
+            $taxRate = $this->tax;
+
+            if ($taxRate != null) {
+                $taxCalculation = $specialPrice * ($taxRate / 100);
+                $specialPrice = $specialPrice + $taxCalculation;
+            }
             return Money::inDefaultCurrency($specialPrice);
         }
     }

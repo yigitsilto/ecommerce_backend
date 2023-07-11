@@ -74,7 +74,9 @@ trait HasCrudActions
             $request = $this->getRequest('store')
                             ->merge([
                                         'price' => $this->getRequest('store')
-                                                        ->all()['prices'][1]
+                                                        ->all()['prices'][1],
+                                        'special_price' => $this->getRequest('store')
+                                                                 ->all()['special_price_no_tax'],
                                     ]);
         }
 
@@ -262,7 +264,9 @@ trait HasCrudActions
             $request = $this->getRequest('update')
                             ->merge([
                                         'price' => $this->getRequest('update')
-                                                        ->all()['prices'][1]
+                                                        ->all()['prices'][1],
+                                        'special_price' => $this->getRequest('store')
+                                                                ->all()['special_price_no_tax'],
                                     ]);
 
 

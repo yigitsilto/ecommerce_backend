@@ -102,15 +102,18 @@ XML;
 
         $comissionRatio = $checkoutRequest['ratio'] / 100;
 
+
         $totalPriceWithComission = $totalPrice;
 
         if ($checkoutRequest['Taksit'] == 1) {
-            $totalPrice -= $totalPrice * $comissionRatio;
+
+                $totalPrice -= $totalPrice * $comissionRatio;
         } else {
             $totalPriceWithComission += $totalPrice * $comissionRatio;
         }
 
         $totalPriceWithComission = round($totalPriceWithComission, 2, PHP_ROUND_HALF_DOWN);
+
 
         OrderSnaphot::query()
                     ->where('id', $checkoutRequest['Siparis_ID'])
@@ -122,7 +125,6 @@ XML;
 
         $client = $this->connect;
 
-        dd($this->tlFormat($totalPriceWithComission),$this->tlFormat($totalPrice) , $totalPrice, $totalPriceWithComission );
 
         $transactionsValueList = [
             "cardType" => $checkoutRequest['SanalPOS_ID'],
@@ -194,7 +196,7 @@ XML;
     protected function tlFormat($money)
     {
         setlocale(LC_MONETARY, 'tr_TR');
-        return str_replace('.', ',', $money);
+           return number_format($money, 2, ',', '.');
 
     }
 

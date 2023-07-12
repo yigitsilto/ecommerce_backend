@@ -122,7 +122,7 @@ XML;
 
         $client = $this->connect;
 
-        dd($this->tlFormat($totalPriceWithComission),$this->tlFormat($totalPrice) );
+        dd($this->tlFormat($totalPriceWithComission),$this->tlFormat($totalPrice) , $totalPrice, $totalPriceWithComission );
 
         $transactionsValueList = [
             "cardType" => $checkoutRequest['SanalPOS_ID'],

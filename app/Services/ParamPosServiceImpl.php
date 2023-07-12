@@ -99,6 +99,7 @@ XML;
 
         $totalPrice = $priceInformations['total'];
 
+
         $comissionRatio = $checkoutRequest['ratio'] / 100;
 
         $totalPriceWithComission = $totalPrice;
@@ -111,7 +112,6 @@ XML;
 
         $totalPriceWithComission = round($totalPriceWithComission, 2, PHP_ROUND_HALF_DOWN);
 
-
         OrderSnaphot::query()
                     ->where('id', $checkoutRequest['Siparis_ID'])
                     ->update([
@@ -121,6 +121,8 @@ XML;
 
 
         $client = $this->connect;
+
+        dd($this->tlFormat($totalPriceWithComission),$this->tlFormat($totalPrice) );
 
         $transactionsValueList = [
             "cardType" => $checkoutRequest['SanalPOS_ID'],

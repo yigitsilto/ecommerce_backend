@@ -52,6 +52,7 @@ class SettingTabs extends Tabs
 //            ->add($this->instamojo())
 //            ->add($this->cod())
             ->add($this->paramPos())
+            ->add($this->ziraat())
             ->add($this->bankTransfer());
 //            ->add($this->checkPayment());
 
@@ -410,6 +411,21 @@ class SettingTabs extends Tabs
                          ]);
 
             $tab->view('setting::admin.settings.tabs.param');
+        });
+    }
+
+    private function ziraat()
+    {
+        return tap(new Tab('ziraat', 'Ziraat Bankası'), function (Tab $tab) {
+            $tab->weight(65);
+
+            $tab->fields([
+                             'ziraat_enabled',
+                             'translatable.ziraat_label',
+                             'translatable.ziraat_description',
+                         ]);
+
+            $tab->view('setting::admin.settings.tabs.ziraat');
         });
     }
 

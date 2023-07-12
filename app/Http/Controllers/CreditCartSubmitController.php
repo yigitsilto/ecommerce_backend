@@ -4,28 +4,30 @@ namespace FleetCart\Http\Controllers;
 
 use FleetCart\Http\Requests\CheckoutParamRequest;
 use FleetCart\Services\CardTypeBinApiService;
+use FleetCart\Services\CreditCartSubmitService;
+use FleetCart\Services\CreditCartSubmitServiceImpl;
 use FleetCart\Services\ParamPosService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 
-class ParamPosController extends Controller
+class CreditCartSubmitController extends Controller
 {
-    private ParamPosService $paramPosInstallmentService;
+    private CreditCartSubmitService $creditCartSubmitService;
 
     private CardTypeBinApiService $cardTypeService;
 
 
-    public function __construct(ParamPosService $paramPosInstallmentService, CardTypeBinApiService $cardTypeBinApiService)
+    public function __construct(CreditCartSubmitService $paramPosInstallmentService, CardTypeBinApiService $cardTypeBinApiService)
     {
-        $this->paramPosInstallmentService = $paramPosInstallmentService;
+        $this->creditCartSubmitService = $paramPosInstallmentService;
         $this->cardTypeService = $cardTypeBinApiService;
     }
 
-    public function index()
+    public function index($type)
     {
-        return response()->json(['DT_Ozel_Oranlar_SK' => $this->paramPosInstallmentService->getAllInstalments()]);
+        return response()->json(['DT_Ozel_Oranlar_SK' => $this->creditCartSubmitService->getAllInstalments($type)]);
     }
 
     /**
@@ -44,10 +46,10 @@ class ParamPosController extends Controller
      * @param CheckoutParamRequest $request
      * @return JsonResponse
      */
-    public function checkout(CheckoutParamRequest $request): JsonResponse
+    public function checkout(CheckoutParamRequest $request, $type): JsonResponse
     {
 
-        return $this->paramPosInstallmentService->checkout($request);
+        return $this->creditCartSubmitService->checkout($request, $type);
     }
 
     /**
@@ -55,9 +57,9 @@ class ParamPosController extends Controller
      * @param Request $request
      * @return RedirectResponse
      */
-    public function successPayment(Request $request)
+    public function successPayment(Request $request, $type)
     {
-        $this->paramPosInstallmentService->successPayment($request);
+        $this->creditCartSubmitService->successPayment($request, $type);
         return redirect()->to(env('FE_URL') . 'payment/info');
     }
 

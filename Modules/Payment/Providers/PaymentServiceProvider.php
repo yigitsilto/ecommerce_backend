@@ -13,6 +13,7 @@ use Illuminate\Support\ServiceProvider;
 use Modules\Payment\Gateways\Instamojo;
 use Modules\Payment\Gateways\BankTransfer;
 use Modules\Payment\Gateways\CheckPayment;
+use Modules\Payment\Gateways\Ziraat;
 
 class PaymentServiceProvider extends ServiceProvider
 {
@@ -36,6 +37,7 @@ class PaymentServiceProvider extends ServiceProvider
         $this->registerBankTransfer();
         $this->registerCheckPayment();
         $this->registerParamPos();
+        $this->registerZiraat();
     }
 
     private function enabled($paymentMethod)
@@ -68,6 +70,7 @@ class PaymentServiceProvider extends ServiceProvider
         }
     }
 
+
     private function registerRazorpay()
     {
         if ($this->enabled('razorpay')) {
@@ -93,6 +96,12 @@ class PaymentServiceProvider extends ServiceProvider
     {
         if ($this->enabled('param')) {
             Gateway::register('param', new Param);
+        }
+    }
+    private function registerZiraat()
+    {
+        if ($this->enabled('ziraat')) {
+            Gateway::register('ziraat', new Ziraat());
         }
     }
 

@@ -42,14 +42,14 @@ Route::get('settings',[\FleetCart\Http\Controllers\SettingsController::class,'in
 Route::get('page/{slug}',[\FleetCart\Http\Controllers\SettingsController::class,'getPageById']);
 /** ProductController end **/
 Route::get('shippings', [CheckoutController::class, 'shippingsAndPaymentMethods']);
-Route::post('successPayment',[\FleetCart\Http\Controllers\ParamPosController::class,'successPayment']);
-Route::post('errorPayment',[\FleetCart\Http\Controllers\ParamPosController::class,'errorPayment']);
+Route::post('successPayment/{type}',[\FleetCart\Http\Controllers\CreditCartSubmitController::class, 'successPayment']);
+Route::post('errorPayment',[\FleetCart\Http\Controllers\CreditCartSubmitController::class, 'errorPayment']);
 Route::get('blog/{id}',[\FleetCart\Http\Controllers\BlogController::class,'findById']);
 Route::get('blogs',[\FleetCart\Http\Controllers\BlogController::class,'index']);
 
 /** Param Pos Controller **/
-Route::get('param',[\FleetCart\Http\Controllers\ParamPosController::class, 'index']);
-Route::post('getCartType',[\FleetCart\Http\Controllers\ParamPosController::class, 'getCardInformations']);
+Route::get('paymentCreditCart/{type}',[\FleetCart\Http\Controllers\CreditCartSubmitController::class, 'index']);
+Route::post('getCartType',[\FleetCart\Http\Controllers\CreditCartSubmitController::class, 'getCardInformations']);
 /** Param Post Controller end */
 
 
@@ -113,7 +113,7 @@ Route::group(['middleware' => JWTMiddleware::class], function () {
     /** checkout end */
 
     /** Param Controller */
-    Route::post('pay-credit', [\FleetCart\Http\Controllers\ParamPosController::class, 'checkout']);
+    Route::post('pay-credit/{type}', [\FleetCart\Http\Controllers\CreditCartSubmitController::class, 'checkout']);
     /** Param Controller end */
 
     Route::get('my-orders',[\FleetCart\Http\Controllers\OrderController::class,'index']);

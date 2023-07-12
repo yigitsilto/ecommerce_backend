@@ -15,10 +15,14 @@ use FleetCart\Services\CardTypeBinApiService;
 use FleetCart\Services\CardTypeBinApiServiceImpl;
 use FleetCart\Services\CheckoutService;
 use FleetCart\Services\CheckoutServiceImpl;
+use FleetCart\Services\CreditCartSubmitService;
+use FleetCart\Services\CreditCartSubmitServiceImpl;
 use FleetCart\Services\ParamPosService;
 use FleetCart\Services\ParamPosServiceImpl;
 use FleetCart\Services\RefundService;
 use FleetCart\Services\RefundServiceImpl;
+use FleetCart\Services\ZiraatService;
+use FleetCart\Services\ZiraatServiceImpl;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -38,6 +42,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CardTypeBinApiService::class,CardTypeBinApiServiceImpl::class);
         $this->app->bind(BasketService::class,BasketServiceImpl::class);
         $this->app->bind(RefundService::class,RefundServiceImpl::class);
+        $this->app->bind(CreditCartSubmitService::class,CreditCartSubmitServiceImpl::class);
+        $this->app->bind(ZiraatService::class,ZiraatServiceImpl::class);
 
     }
 

@@ -133,7 +133,7 @@ XML;
             "creditCardCvc" => $checkoutRequest['KK_CVC'],
             "creditCardOwnerName" => "5372403939",
             "errorUrl" => env("API_URL") . "errorPayment",
-            "succesUrl" => env("API_URL") . "successPayment",
+            "succesUrl" => env("API_URL") . "successPayment/param",
             "orderID" => rand(0, 999999),
             "paymentUrl" => "https://ecommerce.piza.com.tr/payment?order=" . $checkoutRequest['Siparis_ID'],
             "orderExplanation" => date("d-m-Y H:i:s") . " tarihindeki ödeme",

@@ -17,6 +17,7 @@ use Modules\Coupon\Checkers\UsageLimitPerCoupon;
 use Modules\Coupon\Checkers\UsageLimitPerCustomer;
 use Modules\Coupon\Checkers\ValidCoupon;
 use Modules\Coupon\Entities\Coupon;
+use Modules\Order\Entities\Order;
 use Modules\Payment\Facades\Gateway;
 use Modules\Setting\Entities\ShippingCompany;
 use Modules\Support\Money;
@@ -73,20 +74,23 @@ class CheckoutController extends Controller
 
         $order = $this->checkoutService->store($request);
 
-        if (isset($request->shipping_method) && !is_null($request->shipping_method)){
-            $shippingCompany = ShippingCompany::query()
-                                              ->find($request->shipping_method);
-            if ($shippingCompany->slug == 'yurtici'){
-                try {
-                    $kargoService = new KargoService();
-                    $kargoService->CreateShipment($order);
-                } catch (\Exception $exception) {
-                    dd($exception->getMessage());
-                    Log::error($exception->getMessage());
-                }
-            }
 
-        }
+      if ($order instanceof Order){
+          if (isset($request->shipping_method) && !is_null($request->shipping_method)){
+              $shippingCompany = ShippingCompany::query()
+                                                ->find($request->shipping_method);
+              if ($shippingCompany->slug == 'yurtici'){
+                  try {
+                      $kargoService = new KargoService();
+                      $kargoService->CreateShipment($order);
+                  } catch (\Exception $exception) {
+                      dd($exception->getMessage());
+                      Log::error($exception->getMessage());
+                  }
+              }
+
+          }
+      }
 
 
         return response()->json($order);

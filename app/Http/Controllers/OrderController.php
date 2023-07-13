@@ -29,4 +29,6 @@ class OrderController extends Controller
         return response()->json(new OrderResource($order));
 
     }
+
+
 }

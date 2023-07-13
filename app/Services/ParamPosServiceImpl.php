@@ -6,8 +6,10 @@ use FleetCart\Http\Requests\CheckoutParamRequest;
 use FleetCart\Http\Requests\StoreCheckoutRequest;
 use FleetCart\OrderSnaphot;
 use FleetCart\ParamConnectionHelper;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Modules\Setting\Entities\ShippingCompany;
 
 /**
  * Param apisini kullanarak ödeme işleriyle alakalı işlemleri yapan servis
@@ -107,7 +109,7 @@ XML;
 
         if ($checkoutRequest['Taksit'] == 1) {
 
-                $totalPrice -= $totalPrice * $comissionRatio;
+            $totalPrice -= $totalPrice * $comissionRatio;
         } else {
             $totalPriceWithComission += $totalPrice * $comissionRatio;
         }
@@ -196,7 +198,7 @@ XML;
     protected function tlFormat($money)
     {
         setlocale(LC_MONETARY, 'tr_TR');
-           return number_format($money, 2, ',', '.');
+        return number_format($money, 2, ',', '.');
 
     }
 
@@ -211,7 +213,22 @@ XML;
 
             $storeCheckoutRequest = $this->buildRequestClassForStoreOrder($order, $orderSnapForm);
 
-            $this->checkoutService->store($storeCheckoutRequest, $order->user_id);
+            $order = $this->checkoutService->store($storeCheckoutRequest, $order->user_id);
+
+            if (isset($storeCheckoutRequest->shipping_method) && !is_null($storeCheckoutRequest->shipping_method)){
+                $shippingCompany = ShippingCompany::query()
+                                                  ->find($storeCheckoutRequest->shipping_method);
+                if ($shippingCompany->slug == 'yurtici'){
+                    try {
+                        $kargoService = new KargoService();
+                        $kargoService->CreateShipment($order);
+                    } catch (\Exception $exception) {
+                        dd($exception->getMessage());
+                        Log::error($exception->getMessage());
+                    }
+                }
+
+            }
 
 
         }

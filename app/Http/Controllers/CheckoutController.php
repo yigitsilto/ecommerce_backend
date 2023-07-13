@@ -4,8 +4,10 @@ namespace FleetCart\Http\Controllers;
 
 use FleetCart\Http\Requests\StoreCheckoutRequest;
 use FleetCart\Services\CheckoutService;
+use FleetCart\Services\KargoService;
 use Illuminate\Http\Request;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Facades\Log;
 use Modules\Coupon\Checkers\ApplicableCategories;
 use Modules\Coupon\Checkers\ApplicableProducts;
 use Modules\Coupon\Checkers\CouponExists;
@@ -70,6 +72,22 @@ class CheckoutController extends Controller
 
 
         $order = $this->checkoutService->store($request);
+
+        if (isset($request->shipping_method) && !is_null($request->shipping_method)){
+            $shippingCompany = ShippingCompany::query()
+                                              ->find($request->shipping_method);
+            if ($shippingCompany->slug == 'yurtici'){
+                try {
+                    $kargoService = new KargoService();
+                    $kargoService->CreateShipment($order);
+                } catch (\Exception $exception) {
+                    dd($exception->getMessage());
+                    Log::error($exception->getMessage());
+                }
+            }
+
+        }
+
 
         return response()->json($order);
     }

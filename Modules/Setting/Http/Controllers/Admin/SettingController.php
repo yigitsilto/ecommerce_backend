@@ -4,6 +4,7 @@ namespace Modules\Setting\Http\Controllers\Admin;
 
 use FleetCart\Helpers\RedisHelper;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
 use Modules\Admin\Ui\Facades\TabManager;
 use Modules\Setting\Entities\ShippingCompany;
 use Modules\Setting\Http\Requests\UpdateSettingRequest;
@@ -83,6 +84,7 @@ class SettingController
                                         ], [
                                             'name' => $request->get('name'),
                                             'price' => $request->get('price'),
+                                            'slug' => Str::slug($request->get('name')),
                                         ]);
         $this->redisUpdate();
         return redirect()->route('admin.settings.companies');
@@ -97,10 +99,7 @@ class SettingController
     public function deleteCompany($id)
     {
         $this->redisUpdate();
-        ShippingCompany::query()
-                       ->find($id)
-                       ->delete();
-        return redirect()->back();
+        return true;
 
     }
 

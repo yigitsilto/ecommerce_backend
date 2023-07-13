@@ -18,6 +18,9 @@ use Modules\Product\Events\ShowingProductList;
 use Modules\Product\Http\Controllers\SuggestionController;
 use Modules\Slider\Entities\Slider;
 
+
+Route::get('kargo-test', [\FleetCart\Http\Controllers\KargoController::class, 'queryShipment']);
+
 /** Product import */
 Route::get('import-kore',[\FleetCart\Http\Controllers\SettingsController::class,'importKore']);
 /** Product import end */
@@ -50,6 +53,7 @@ Route::get('blogs',[\FleetCart\Http\Controllers\BlogController::class,'index']);
 /** Param Pos Controller **/
 Route::get('paymentCreditCart/{type}',[\FleetCart\Http\Controllers\CreditCartSubmitController::class, 'index']);
 Route::post('getCartType',[\FleetCart\Http\Controllers\CreditCartSubmitController::class, 'getCardInformations']);
+Route::post('kargo/test',[\FleetCart\Http\Controllers\KargoController::class, 'CreateShipment']);
 /** Param Post Controller end */
 
 
